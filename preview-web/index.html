@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veryfy Retailer Mobile App - Interactive Live Showcase</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #3D52D5;
+      color: #ffffff;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+    p.subtitle {
+      color: #94a3b8;
+      font-size: 15px;
+    }
+    .main-layout {
+      display: flex;
+      gap: 40px;
+      max-width: 1200px;
+      width: 100%;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+    /* Phone Frame */
+    .device-wrapper {
+      position: relative;
+      width: 390px;
+      height: 800px;
+      background: #1e293b;
+      border-radius: 48px;
+      padding: 12px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+    .device-screen {
+      width: 100%;
+      height: 100%;
+      background: #F9FAFB;
+      border-radius: 38px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      color: #111827;
+    }
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #000000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+    .status-bar {
+      height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #111827;
+      z-index: 90;
+    }
+    /* Screen Views */
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+    }
+    .screen-content.active {
+      display: flex;
+    }
+    /* Controls Nav Sidebar */
+    .screen-selector-panel {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 380px;
+    }
+    .selector-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .group-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      margin-top: 14px;
+      margin-bottom: 8px;
+    }
+    .screen-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+    .screen-btn:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+    .screen-btn.active {
+      background: #3D52D5;
+      color: #ffffff;
+      border-color: #4F46E5;
+    }
+    /* Mobile App Components */
+    .top-nav {
+      background: #ffffff;
+      padding: 12px 16px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bottom-tab-bar {
+      height: 64px;
+      background: #ffffff;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #6B7280;
+      cursor: pointer;
+    }
+    .tab-item.active {
+      color: #3D52D5;
+    }
+    .scan-tab-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: #3D52D5;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(61, 82, 213, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge">Expo SDK 58 • TypeScript • Figma Tokens</div>
+    <h1>Veryfy Retailer Mobile App</h1>
+    <p class="subtitle">Complete Merchant Workspace, Inventory & Batch Authentication Platform</p>
+  </header>
+
+  <div class="main-layout">
+    <!-- Phone Simulator -->
+    <div class="device-wrapper">
+      <div class="device-screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>5G • 100%</span>
+        </div>
+
+        <!-- 1. WELCOME SCREEN -->
+        <div id="screen-welcome" class="screen-content active" style="padding: 24px; justify-content: space-between; background: #ffffff;">
+          <div style="text-align: center; margin-top: 60px;">
+            <div style="width: 84px; height: 84px; border-radius: 42px; background: #EEF0FD; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#3D52D5" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h2 style="font-size: 32px; font-weight: 800; color: #3D52D5; letter-spacing: 2px;">VERYFY</h2>
+            <p style="font-size: 16px; font-weight: 700; color: #111827; margin: 8px 0 12px;">Built for everyday trust in Nigeria.</p>
+            <p style="font-size: 13px; color: #6B7280; line-height: 20px;">Protect your pharmacy and retail store by authenticating batch QR codes, NAFDAC registrations, and genuine manufacturer supply seals.</p>
+          </div>
+          <div>
+            <button onclick="showScreen('screen-role')" style="width: 100%; padding: 14px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px;">Get Started</button>
+            <button onclick="showScreen('screen-signin')" style="width: 100%; padding: 12px; background: transparent; color: #3D52D5; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">I already have a store account</button>
+          </div>
+        </div>
+
+        <!-- 2. ROLE SELECTION -->
+        <div id="screen-role" class="screen-content" style="padding: 20px; background: #ffffff; justify-content: space-between;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #3D52D5; letter-spacing: 1px; text-transform: uppercase;">Your Experience</div>
+            <h2 style="font-size: 22px; font-weight: 700; color: #111827; margin: 4px 0 8px;">How will you use Veryfy?</h2>
+            <p style="font-size: 13px; color: #6B7280; margin-bottom: 20px;">Select the option that best describes your operations.</p>
+            
+            <div style="border: 2px solid #3D52D5; background: #EEF0FD; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer;">
+              <div style="font-weight: 700; color: #1E3A8A; font-size: 15px; margin-bottom: 4px;">🏪 Retailer & Merchant (Selected)</div>
+              <div style="font-size: 12px; color: #4B5563; line-height: 18px;">Inventory registration, batch authentication, incident reports, and store safety.</div>
+            </div>
+
+            <div style="border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; margin-bottom: 12px; opacity: 0.6;">
+              <div style="font-weight: 700; color: #111827; font-size: 15px; margin-bottom: 4px;">🛍 Consumer / Shopper</div>
+              <div style="font-size: 12px; color: #6B7280;">Single item verification at point of purchase.</div>
+            </div>
+
+            <div style="border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; opacity: 0.6;">
+              <div style="font-weight: 700; color: #111827; font-size: 15px; margin-bottom: 4px;">🏭 Manufacturer / Brand</div>
+              <div style="font-size: 12px; color: #6B7280;">Serial generation and distribution tracking.</div>
+            </div>
+          </div>
+          <button onclick="showScreen('screen-signin')" style="width: 100%; padding: 14px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer;">Continue as Retailer</button>
+        </div>
+
+        <!-- 3. SIGN IN -->
+        <div id="screen-signin" class="screen-content" style="padding: 20px; background: #ffffff;">
+          <div style="font-size: 11px; font-weight: 700; color: #3D52D5; text-transform: uppercase;">Retailer Access</div>
+          <h2 style="font-size: 24px; font-weight: 700; color: #111827; margin: 4px 0 6px;">Sign in</h2>
+          <p style="font-size: 13px; color: #6B7280; margin-bottom: 24px;">Enter your merchant credentials to continue to the Veryfy workspace.</p>
+          
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Store Email / Phone</label>
+            <input type="text" value="samuel@ikejacentral.ng" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px;">
+          </div>
+          <div style="margin-bottom: 10px;">
+            <label style="font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Password</label>
+            <input type="password" value="password123" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px;">
+          </div>
+          <div style="text-align: right; margin-bottom: 24px;">
+            <span onclick="showScreen('screen-forgot')" style="font-size: 12px; color: #3D52D5; font-weight: 600; cursor: pointer;">Forgot password?</span>
+          </div>
+          <button onclick="showScreen('screen-home')" style="width: 100%; padding: 14px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer;">Sign In</button>
+          <div style="text-align: center; margin-top: 20px; font-size: 13px; color: #6B7280;">
+            Don't have an account? <span onclick="showScreen('screen-register')" style="color: #3D52D5; font-weight: 700; cursor: pointer;">Register store</span>
+          </div>
+        </div>
+
+        <!-- 4. RETAILER HOME DASHBOARD -->
+        <div id="screen-home" class="screen-content" style="background: #F9FAFB;">
+          <div class="top-nav">
+            <div>
+              <div style="font-size: 16px; font-weight: 700; color: #111827;">Ikeja Central Meds</div>
+              <div style="font-size: 11px; color: #6B7280;">Lagos • Cluster LAG-IKJ-04</div>
+            </div>
+            <div onclick="showScreen('screen-notifications')" style="width: 36px; height: 36px; border-radius: 18px; background: #F3F4F6; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
+              🔔
+              <span style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #DC2626; border-radius: 4px;"></span>
+            </div>
+          </div>
+          <div style="padding: 16px; overflow-y: auto; flex: 1;">
+            <!-- Metrics Card -->
+            <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #E5E7EB; margin-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase;">
+                <span>Today's Overview</span>
+                <span style="color: #16A34A;">● Live Sync</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 12px; text-align: center;">
+                <div>
+                  <div style="font-size: 22px; font-weight: 800;">18</div>
+                  <div style="font-size: 10px; color: #6B7280;">Scanned</div>
+                </div>
+                <div>
+                  <div style="font-size: 22px; font-weight: 800; color: #16A34A;">100%</div>
+                  <div style="font-size: 10px; color: #6B7280;">Genuine Rate</div>
+                </div>
+                <div>
+                  <div style="font-size: 22px; font-weight: 800;">249</div>
+                  <div style="font-size: 10px; color: #6B7280;">Stock Units</div>
+                </div>
+                <div>
+                  <div style="font-size: 22px; font-weight: 800; color: #D97706;">1</div>
+                  <div style="font-size: 10px; color: #6B7280;">Under Review</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Action Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+              <div onclick="showScreen('screen-scan')" style="background: white; padding: 12px 6px; border-radius: 10px; border: 1px solid #E5E7EB; text-align: center; cursor: pointer;">
+                <div style="font-size: 20px; margin-bottom: 4px;">📷</div>
+                <div style="font-size: 11px; font-weight: 700;">Scan QR</div>
+              </div>
+              <div onclick="showScreen('screen-inventory')" style="background: white; padding: 12px 6px; border-radius: 10px; border: 1px solid #E5E7EB; text-align: center; cursor: pointer;">
+                <div style="font-size: 20px; margin-bottom: 4px;">📦</div>
+                <div style="font-size: 11px; font-weight: 700;">Inventory</div>
+              </div>
+              <div onclick="showScreen('screen-report-form')" style="background: white; padding: 12px 6px; border-radius: 10px; border: 1px solid #E5E7EB; text-align: center; cursor: pointer;">
+                <div style="font-size: 20px; margin-bottom: 4px;">🚨</div>
+                <div style="font-size: 11px; font-weight: 700;">Report</div>
+              </div>
+            </div>
+
+            <!-- Safety Guidance Card -->
+            <div onclick="showScreen('screen-guidance')" style="background: #EEF0FD; border: 1px solid #BFC7FD; border-radius: 12px; padding: 14px; margin-bottom: 14px; cursor: pointer;">
+              <div style="font-size: 10px; font-weight: 700; color: #3D52D5; text-transform: uppercase;">Everyday Checks</div>
+              <div style="font-size: 13px; font-weight: 700; color: #1E3A8A; margin: 2px 0;">Retailer Safety Guidance</div>
+              <div style="font-size: 11px; color: #4B5563;">How to spot tampered cartons, missing holographic seals, and invalid NAFDAC codes.</div>
+            </div>
+
+            <!-- Recent Items -->
+            <div style="font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; margin-bottom: 8px;">Recent Stock Logs</div>
+            <div style="background: white; border-radius: 10px; border: 1px solid #E5E7EB; padding: 12px; margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-weight: 700; font-size: 13px;">Panadol Extra Tablets</div>
+                <span style="background: #F0FDF4; color: #16A34A; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">Verified Genuine</span>
+              </div>
+              <div style="font-size: 11px; color: #6B7280; margin-top: 2px;">Batch: BN-88392-A • 120 units in stock</div>
+            </div>
+            <div style="background: white; border-radius: 10px; border: 1px solid #E5E7EB; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-weight: 700; font-size: 13px;">Amoxil 500mg Capsules</div>
+                <span style="background: #FEF2F2; color: #DC2626; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">Counterfeit Alert</span>
+              </div>
+              <div style="font-size: 11px; color: #6B7280; margin-top: 2px;">Batch: FAKE-AMX-001 • 6 units quarantined</div>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Bar -->
+          <div class="bottom-tab-bar">
+            <div class="tab-item active" onclick="showScreen('screen-home')"><span>🏠</span><span>Home</span></div>
+            <div class="tab-item" onclick="showScreen('screen-inventory')"><span>📦</span><span>Inventory</span></div>
+            <div class="scan-tab-btn" onclick="showScreen('screen-scan')">📷</div>
+            <div class="tab-item" onclick="showScreen('screen-reports')"><span>📋</span><span>Reports</span></div>
+            <div class="tab-item" onclick="showScreen('screen-profile')"><span>🏪</span><span>Profile</span></div>
+          </div>
+        </div>
+
+        <!-- 5. INVENTORY SCREEN (Screen C - Frame 503:4271) -->
+        <div id="screen-inventory" class="screen-content" style="background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 12px 20px 4px;">
+            <div onclick="showScreen('screen-home')" style="font-size: 20px; font-weight: 700; cursor: pointer; color: #0A0A0A; margin-bottom: 8px;">←</div>
+            <div style="font-size: 20px; font-weight: 700; color: #000000; margin-bottom: 10px;">Inventory</div>
+
+            <!-- Search & Filter -->
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+              <div style="flex: 1; height: 42px; border: 1px solid #E1E1E1; border-radius: 12px; display: flex; align-items: center; padding: 0 12px; background: #ffffff;">
+                <span style="color: #666666; margin-right: 8px;">🔍</span>
+                <input type="text" placeholder="Search by product name, batch number, size..." style="border: none; outline: none; width: 100%; font-size: 12px; color: #161616;">
+              </div>
+              <button onclick="alert('Filter options: All, Verified, Invalid, Counterfeit');" style="width: 42px; height: 42px; border: 1px solid #E1E1E1; border-radius: 12px; background: white; cursor: pointer; font-size: 16px;">⚡</button>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px;">
+              <span style="background: #2E40B8; color: white; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer;">All (50)</span>
+              <span style="background: #F3F4F6; color: #666666; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 8px; cursor: pointer;">Verified (48)</span>
+              <span style="background: #F3F4F6; color: #666666; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 8px; cursor: pointer;">Invalid (1)</span>
+              <span style="background: #F3F4F6; color: #666666; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 8px; cursor: pointer;">Counterfeit (1)</span>
+            </div>
+          </div>
+
+          <!-- Product Cards List -->
+          <div style="padding: 0 20px 14px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Card 1 -->
+            <div onclick="showScreen('screen-result-verified')" style="height: 70px; border: 1px solid #E1E1E1; border-radius: 12px; padding: 0 14px; display: flex; justify-content: space-between; align-items: center; background: white; cursor: pointer;">
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: #161616;">PureGlow Face Cream</div>
+                <div style="font-size: 12px; color: #666666; margin-top: 2px;">Authentic · 13 Jun</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #DCFCE7; color: #166534; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">✓ Verified</span>
+                <span style="color: #A3A3A3;">›</span>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div onclick="showScreen('screen-result-verified')" style="height: 70px; border: 1px solid #E1E1E1; border-radius: 12px; padding: 0 14px; display: flex; justify-content: space-between; align-items: center; background: white; cursor: pointer;">
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: #161616;">PureGlow Face Cream</div>
+                <div style="font-size: 12px; color: #666666; margin-top: 2px;">Authentic · 13 Jun</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #DCFCE7; color: #166534; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">✓ Verified</span>
+                <span style="color: #A3A3A3;">›</span>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div onclick="showScreen('screen-result-verified')" style="height: 70px; border: 1px solid #E1E1E1; border-radius: 12px; padding: 0 14px; display: flex; justify-content: space-between; align-items: center; background: white; cursor: pointer;">
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: #161616;">Chocolate wafers</div>
+                <div style="font-size: 12px; color: #666666; margin-top: 2px;">Source unclear · 12 Jun</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #DCFCE7; color: #166534; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">✓ Verified</span>
+                <span style="color: #A3A3A3;">›</span>
+              </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div onclick="showScreen('screen-result-suspicious')" style="height: 70px; border: 1px solid #E1E1E1; border-radius: 12px; padding: 0 14px; display: flex; justify-content: space-between; align-items: center; background: white; cursor: pointer;">
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: #161616;">Chocolate wafers</div>
+                <div style="font-size: 12px; color: #666666; margin-top: 2px;">Source unclear · 12 Jun</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #EF4444; color: white; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">✕ Invalid</span>
+                <span style="color: #A3A3A3;">›</span>
+              </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div onclick="showScreen('screen-result-suspicious')" style="height: 70px; border: 1px solid #E1E1E1; border-radius: 12px; padding: 0 14px; display: flex; justify-content: space-between; align-items: center; background: white; cursor: pointer;">
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: #161616;">Chocolate wafers</div>
+                <div style="font-size: 12px; color: #666666; margin-top: 2px;">Source unclear · 12 Jun</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">? Not verified</span>
+                <span style="color: #A3A3A3;">›</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Tab Bar (Matching Reference) -->
+          <div style="height: 74px; background: #FFFFFF; border-top: 1px solid #E5E7EB; display: flex; justify-content: space-around; align-items: center; padding-bottom: 6px;">
+            <div onclick="showScreen('screen-home')" style="width: 64px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #666666; font-size: 11px;">
+              <span style="font-size: 18px;">🏠</span>
+              <span>Home</span>
+            </div>
+            <div onclick="showScreen('screen-inventory')" style="width: 68px; height: 48px; background: #F7F7FF; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #2E40B8; font-size: 11px; font-weight: 600;">
+              <span style="font-size: 18px;">📦</span>
+              <span>Inventory</span>
+            </div>
+            <div onclick="showScreen('screen-scan')" style="width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; margin-top: -6px;">
+              <div style="width: 44px; height: 44px; border-radius: 22px; background: #3D52D5; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 4px 8px rgba(61,82,213,0.35);">
+                📷
+              </div>
+              <span style="font-size: 11px; color: #666666; margin-top: 2px;">Scan</span>
+            </div>
+            <div onclick="showScreen('screen-reports')" style="width: 64px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #666666; font-size: 11px;">
+              <span style="font-size: 18px;">📋</span>
+              <span>Reports</span>
+            </div>
+            <div onclick="showScreen('screen-profile')" style="width: 64px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #666666; font-size: 11px;">
+              <span style="font-size: 18px;">🏪</span>
+              <span>Profile</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. SCANNER SIMULATOR -->
+        <div id="screen-scan" class="screen-content" style="background: #0F172A; color: white; justify-content: space-between;">
+          <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span onclick="showScreen('screen-home')" style="font-size: 20px; cursor: pointer;">✕</span>
+            <span style="font-weight: 700; font-size: 15px;">Verify Product QR</span>
+            <span>⚡ Torch</span>
+          </div>
+
+          <div style="text-align: center; padding: 0 20px;">
+            <div style="font-size: 16px; font-weight: 700;">Position the QR code</div>
+            <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">Align the product QR or 2D matrix inside the frame</div>
+
+            <!-- Reticle -->
+            <div style="width: 200px; height: 200px; border: 3px solid #3D52D5; border-radius: 20px; margin: 30px auto; display: flex; align-items: center; justify-content: center; position: relative;">
+              <div style="font-size: 40px; opacity: 0.3;">🔲</div>
+            </div>
+
+            <!-- Test outcome buttons -->
+            <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; margin-top: 10px;">
+              <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 8px;">Trigger Verification Outcome:</div>
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <button onclick="showScreen('screen-result-verified')" style="background: #16A34A; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">Genuine</button>
+                <button onclick="showScreen('screen-result-suspicious')" style="background: #D97706; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">Suspicious</button>
+                <button onclick="showScreen('screen-result-counterfeit')" style="background: #DC2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">Counterfeit</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 24px; text-align: center;">
+            <button onclick="showScreen('screen-result-verified')" style="width: 100%; padding: 14px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer;">Simulate Scan Capture</button>
+          </div>
+        </div>
+
+        <!-- 7. RESULT: GENUINE (Screen A - Frame 503:4196) -->
+        <div id="screen-result-verified" class="screen-content" style="background: #ffffff; padding: 16px 20px 24px; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span onclick="showScreen('screen-scan')" style="font-size: 20px; font-weight: 700; cursor: pointer; color: #0A0A0A;">←</span>
+            <span style="font-size: 18px; font-weight: 600; color: #0A0A0A;">Product Verification</span>
+            <span style="width: 20px;"></span>
+          </div>
+
+          <!-- Hero Image -->
+          <div style="height: 160px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+            <img src="../assets/cerave_lotion.png" alt="Cerave Lotion" style="max-height: 145px; object-fit: contain;">
+          </div>
+
+          <!-- Product Row -->
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: #F0FDF4; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              📦
+            </div>
+            <div>
+              <div style="font-size: 16px; font-weight: 700; color: #161616;">Cerave Moisturizing Lotion</div>
+              <div style="font-size: 12px; color: #666666; margin-top: 2px;">Skincare · 235 ml</div>
+            </div>
+          </div>
+
+          <!-- Matched Card -->
+          <div style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: inline-flex; align-items: center; gap: 4px; background: #85F467; color: #010B4F; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; margin-bottom: 10px;">
+              ✓ Verified
+            </div>
+            <div style="font-size: 17px; font-weight: 700; color: #161616; margin-bottom: 4px;">The Uni-Code matched.</div>
+            <div style="font-size: 12px; color: #666666; line-height: 17px;">The Uni Code matched a registered product, with no suspicious activity detected.</div>
+          </div>
+
+          <!-- Product details card -->
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 13px; font-weight: 600; color: #666666; margin-bottom: 8px;">Product details</div>
+            <div style="background: #FFFFFF; border: 1px solid #E1E1E1; border-radius: 12px; padding: 4px 14px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6;">
+                <span style="color: #666666;">Uni-code</span>
+                <span style="font-weight: 600; color: #161616;">VFY-2849-1036</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6;">
+                <span style="color: #666666;">Manufacturer</span>
+                <span style="font-weight: 600; color: #161616;">VitaCore Health Ltd.</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6;">
+                <span style="color: #666666;">Date Approved</span>
+                <span style="font-weight: 600; color: #161616;">2024-01-30</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6;">
+                <span style="color: #666666;">Expiry Date</span>
+                <span style="font-weight: 600; color: #161616;">2029-01-29</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                <span style="color: #666666;">NAFDAC No</span>
+                <span style="font-weight: 600; color: #161616;">01-5391</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <button onclick="showScreen('screen-add-stock')" style="width: 100%; height: 50px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Add to inventory</button>
+          <button onclick="showScreen('screen-scan')" style="width: 100%; height: 50px; background: transparent; color: #3D52D5; border: 1px solid #3D52D5; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">Scan a product</button>
+        </div>
+
+        <!-- 8. RESULT: COUNTERFEIT -->
+        <div id="screen-result-counterfeit" class="screen-content" style="background: #F9FAFB; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span onclick="showScreen('screen-scan')" style="color: #DC2626; font-weight: 700; cursor: pointer;">← Scanner</span>
+            <span style="font-weight: 700; color: #DC2626;">Counterfeit Alert</span>
+            <span></span>
+          </div>
+
+          <div style="background: white; border-radius: 14px; border: 1px solid #FECACA; overflow: hidden; margin-bottom: 16px;">
+            <div style="background: #FEF2F2; padding: 14px; border-bottom: 1px solid #FECACA;">
+              <span style="background: #DC2626; color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">DO NOT DISPENSE</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: #991B1B; margin-top: 8px;">Amoxil 500mg Capsules</h3>
+              <p style="font-size: 12px; color: #7F1D1D;">Unverified Supplier • FAKE-AMX-001</p>
+            </div>
+            <div style="padding: 14px;">
+              <div style="background: #FEF2F2; border: 1px solid #FECACA; padding: 12px; border-radius: 8px; font-size: 12px; color: #991B1B; line-height: 18px; margin-bottom: 12px;">
+                ⚠️ <strong>CRITICAL WARNING:</strong> This product code is flagged as counterfeit in the national safety database. The cryptographic seal failed verification.
+              </div>
+              <div style="font-size: 12px; color: #4B5563;">
+                <div>• Batch code mismatch observed in Lagos cluster.</div>
+                <div>• Quarantining this stock is required by regulation.</div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="showScreen('screen-report-form')" style="width: 100%; padding: 14px; background: #DC2626; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px;">🚨 File Enforcement Report</button>
+          <button onclick="showScreen('screen-inventory')" style="width: 100%; padding: 12px; background: white; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Quarantine Stock</button>
+        </div>
+
+        <!-- 9. REPORT A PRODUCT FORM -->
+        <div id="screen-report-form" class="screen-content" style="padding: 16px; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span onclick="showScreen('screen-home')" style="color: #3D52D5; font-weight: 700; cursor: pointer;">← Cancel</span>
+            <span style="font-size: 11px; font-weight: 700; color: #DC2626;">STEP 1 OF 1</span>
+          </div>
+
+          <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px;">Why are you reporting this product?</h2>
+          <p style="font-size: 12px; color: #6B7280; margin-bottom: 16px;">Your report alerts neighboring pharmacies and protects public health.</p>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 11px; font-weight: 700; color: #374151; display: block; margin-bottom: 4px;">REASON</label>
+            <div style="border: 2px solid #DC2626; background: #FEF2F2; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #991B1B; margin-bottom: 6px;">● Suspected Counterfeit (Selected)</div>
+            <div style="border: 1px solid #E5E7EB; padding: 10px; border-radius: 8px; font-size: 13px; color: #4B5563; margin-bottom: 6px;">○ Packaging looks unusual</div>
+            <div style="border: 1px solid #E5E7EB; padding: 10px; border-radius: 8px; font-size: 13px; color: #4B5563;">○ Product source is unclear</div>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 11px; font-weight: 700; color: #374151; display: block; margin-bottom: 4px;">PRODUCT NAME</label>
+            <input type="text" value="Amoxil 500mg Capsules" style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 13px;">
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 11px; font-weight: 700; color: #374151; display: block; margin-bottom: 4px;">BATCH NUMBER</label>
+            <input type="text" value="FAKE-AMX-001" style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 13px;">
+          </div>
+
+          <div style="border: 1.5px dashed #D1D5DB; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 18px; background: #F9FAFB;">
+            <div style="font-size: 20px;">📷</div>
+            <div style="font-size: 12px; font-weight: 700; color: #3D52D5; margin-top: 4px;">Carton Photo Attached</div>
+            <div style="font-size: 10px; color: #6B7280;">amoxil_tamper_seal.jpg (1.2 MB)</div>
+          </div>
+
+          <button onclick="showScreen('screen-report-success')" style="width: 100%; padding: 14px; background: #DC2626; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Submit Enforcement Report</button>
+        </div>
+
+        
+        <!-- NEW SCREEN: SUSPICIOUS RESULT (Frame 503:4405) -->
+        <div id="screen-result-suspicious" class="screen-content" style="background: #ffffff; padding: 16px; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #F0F0F0; padding-bottom: 8px;">
+            <span onclick="showScreen('screen-scan')" style="color: #161616; font-size: 18px; font-weight: 700; cursor: pointer;">←</span>
+            <span style="font-weight: 700; font-size: 16px; color: #161616;">Verification result</span>
+            <span>🔔</span>
+          </div>
+
+          <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+            <div style="display: inline-flex; align-items: center; gap: 4px; background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; margin-bottom: 8px;">
+              ▲ Suspicious
+            </div>
+            <h3 style="font-size: 17px; font-weight: 700; color: #161616; margin-bottom: 4px;">Something needs a closer look.</h3>
+            <p style="font-size: 12px; color: #666666; line-height: 17px;">Some information associated with this product requires further attention.</p>
+          </div>
+
+          <div style="display: flex; gap: 12px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: #E5E7EB; display: flex; align-items: center; justify-content: center; font-size: 20px;">📦</div>
+            <div>
+              <div style="font-size: 10px; font-weight: 700; color: #666666; text-transform: uppercase;">VITACORE</div>
+              <div style="font-size: 14px; font-weight: 700; color: #161616;">VitaCore Paracetamol</div>
+              <div style="font-size: 12px; color: #666666;">Medicine · 500 mg tablets</div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid #E5E7EB; padding-top: 12px; margin-bottom: 14px;">
+            <div style="font-size: 14px; font-weight: 700; color: #161616; margin-bottom: 10px;">What we found</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #F3F4F6; font-size: 12px;">
+              <span style="color: #92400E;">▲ Product information needs review</span>
+              <a href="#" onclick="alert('The registration data differs from manufacturer records.'); return false;" style="color: #3D52D5; font-weight: 600; text-decoration: none;">Learn more</a>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #F3F4F6; font-size: 12px;">
+              <span style="color: #92400E;">▲ Source information is unclear</span>
+              <a href="#" onclick="alert('Upstream licensed distributor credentials could not be verified.'); return false;" style="color: #3D52D5; font-weight: 600; text-decoration: none;">Learn more</a>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 12px;">
+              <span style="color: #92400E;">▲ Verification details are incomplete</span>
+              <a href="#" onclick="alert('Tamper-evident serial seal is pending inspection.'); return false;" style="color: #3D52D5; font-weight: 600; text-decoration: none;">Learn more</a>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; font-size: 12px;">
+            <div>
+              <div style="font-size: 10px; font-weight: 700; color: #666666;">CODE</div>
+              <div style="font-weight: 700; color: #161616;">VFY-2849-1036</div>
+            </div>
+            <div>
+              <div style="font-size: 10px; font-weight: 700; color: #666666;">CHECKED</div>
+              <div style="color: #161616;">Today, 10:42 AM</div>
+            </div>
+          </div>
+
+          <button onclick="alert('Batch details reviewed.');" style="width: 100%; padding: 12px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px;">Review details</button>
+          <button onclick="showScreen('screen-report-form')" style="width: 100%; padding: 12px; background: transparent; color: #DC2626; border: 1.5px solid #DC2626; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Report product</button>
+        </div>
+
+        <!-- NEW SCREEN: MANUAL UNI-CODE ENTRY (Frame 503:4496) -->
+        <div id="screen-manual-scan" class="screen-content" style="background: #ffffff; padding: 20px; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h2 style="font-size: 20px; font-weight: 700; color: #161616;">Enter Uni-code</h2>
+                <p style="font-size: 12px; color: #666666; margin-top: 2px;">The code is usually printed on the product packaging.</p>
+              </div>
+              <span onclick="showScreen('screen-scan')" style="font-size: 20px; cursor: pointer; color: #666666;">✕</span>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #161616; margin-bottom: 6px;">Uni-code</label>
+              <input type="text" value="VFY-2849-1036" style="width: 100%; height: 46px; border: 1px solid #D1D5DB; border-radius: 8px; padding: 0 12px; font-size: 15px; font-weight: 600; font-family: monospace; letter-spacing: 0.5px;">
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; background: #F3F4F6; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+              <span style="font-size: 16px;">ⓘ</span>
+              <span style="font-size: 12px; color: #666666; line-height: 16px;">Check every letter and number carefully before verifying.</span>
+            </div>
+          </div>
+
+          <div>
+            <button onclick="showScreen('screen-result-verified')" style="width: 100%; height: 48px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Verify product</button>
+            <button onclick="showScreen('screen-scan')" style="width: 100%; height: 44px; background: transparent; color: #3D52D5; border: none; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">📷 Scan instead</button>
+          </div>
+        </div>
+
+        <!-- NEW SCREEN: ADD STOCK TO INVENTORY (Frame 503:4234) -->
+        <div id="screen-add-stock" class="screen-content" style="background: #ffffff; padding: 18px; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #F0F0F0; padding-bottom: 8px;">
+            <span onclick="showScreen('screen-result-verified')" style="color: #161616; font-size: 18px; font-weight: 700; cursor: pointer;">←</span>
+            <span style="font-weight: 700; font-size: 16px; color: #161616;">Add stock to Inventory</span>
+            <span></span>
+          </div>
+
+          <p style="font-size: 12px; color: #666666; margin-bottom: 14px;">Verify batch details before adding this authenticated stock to your store catalog.</p>
+
+          <div style="display: flex; gap: 12px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+            <div style="width: 44px; height: 44px; border-radius: 8px; background: #E0E7FF; display: flex; align-items: center; justify-content: center; font-size: 22px;">🧴</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="font-size: 14px; font-weight: 700; color: #161616;">Cerave Moisturizing Lotion</div>
+                <span style="color: #16A34A; font-size: 11px; font-weight: 700;">✓ Authentic</span>
+              </div>
+              <div style="font-size: 11px; color: #666666; margin-top: 2px;">Skincare · 235 ml · VFY-2849-1036</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">QUANTITY IN STOCK *</label>
+            <input type="number" value="120" style="width: 100%; height: 44px; border: 1px solid #D1D5DB; border-radius: 8px; padding: 0 12px; font-size: 14px; font-weight: 600;">
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">LOCATION (OPTIONAL)</label>
+            <input type="text" value="Shelf A3 - Skincare" style="width: 100%; height: 44px; border: 1px solid #D1D5DB; border-radius: 8px; padding: 0 12px; font-size: 14px;">
+          </div>
+
+          <div style="margin-bottom: 18px;">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">NOTES (OPTIONAL)</label>
+            <input type="text" value="Delivered by verified regional distributor" style="width: 100%; height: 44px; border: 1px solid #D1D5DB; border-radius: 8px; padding: 0 12px; font-size: 14px;">
+          </div>
+
+          <button onclick="showScreen('screen-inventory')" style="width: 100%; height: 48px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Save to inventory</button>
+        </div>
+
+        <!-- NEW SCREEN: REPORT RECEIVED (Frame 503:4472) -->
+        <div id="screen-report-success" class="screen-content" style="background: #ffffff; padding: 24px; justify-content: center; align-items: center; text-align: center;">
+          <div style="width: 72px; height: 72px; border-radius: 36px; background: #F0FDF4; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #166534; margin: 0 auto 16px;">
+            ✓
+          </div>
+
+          <div style="font-size: 12px; font-weight: 700; color: #166534; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px;">SUBMITTED SUCCESSFULLY</div>
+          <h2 style="font-size: 26px; font-weight: 700; color: #161616; margin-bottom: 8px;">Report received</h2>
+          <p style="font-size: 13px; color: #666666; line-height: 19px; max-width: 280px; margin: 0 auto 24px;">Thanks for helping us review potentially unsafe or counterfeit products.</p>
+
+          <div style="width: 100%; background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+            <div style="font-size: 11px; font-weight: 700; color: #666666; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 4px;">REPORT ID</div>
+            <div style="font-size: 22px; font-weight: 700; color: #161616; letter-spacing: 0.5px; margin-bottom: 4px;">VFY-RP-10482</div>
+            <div style="font-size: 12px; color: #666666;">Keep this number for your records.</div>
+          </div>
+
+          <div style="width: 100%; height: 1px; background: #E5E7EB; margin-bottom: 20px;"></div>
+
+          <button onclick="showScreen('screen-reports')" style="width: 100%; height: 48px; background: #3D52D5; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 12px;">Done</button>
+          <button onclick="showScreen('screen-reports')" style="width: 100%; height: 44px; background: transparent; color: #3D52D5; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">View Reports →</button>
+        </div>
+
+        <!-- 10. REPORTS LIST -->
+        <div id="screen-reports" class="screen-content" style="background: #F9FAFB;">
+          <div class="top-nav">
+            <div>
+              <div style="font-size: 16px; font-weight: 700; color: #111827;">My Reports</div>
+              <div style="font-size: 11px; color: #6B7280;">Veryfy Safety Enforcement</div>
+            </div>
+            <button onclick="showScreen('screen-report-form')" style="background: #DC2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">+ Report</button>
+          </div>
+          <div style="padding: 14px;">
+            <div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 14px; margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="font-size: 11px; font-weight: 700; color: #6B7280;">VFY-RP-10482</div>
+                <span style="background: #F0FDF4; color: #16A34A; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">Reviewed</span>
+              </div>
+              <div style="font-weight: 700; font-size: 14px; margin: 4px 0 2px;">Amoxil 500mg Capsules</div>
+              <div style="font-size: 11px; color: #4B5563;">Suspected Counterfeit • Batch: FAKE-AMX-001</div>
+              <div style="border-top: 1px solid #F3F4F6; margin-top: 8px; padding-top: 6px; font-size: 11px; color: #16A34A; font-weight: 600;">
+                ✓ Confirmed fake by safety team. Batch impounded.
+              </div>
+            </div>
+
+            <div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 14px;">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="font-size: 11px; font-weight: 700; color: #6B7280;">VFY-RP-10499</div>
+                <span style="background: #FFFBEB; color: #D97706; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">Open</span>
+              </div>
+              <div style="font-weight: 700; font-size: 14px; margin: 4px 0 2px;">Augmentin 625mg</div>
+              <div style="font-size: 11px; color: #4B5563;">Packaging looks unusual • Batch: AUG-88129</div>
+            </div>
+          </div>
+          <div class="bottom-tab-bar">
+            <div class="tab-item" onclick="showScreen('screen-home')"><span>🏠</span><span>Home</span></div>
+            <div class="tab-item" onclick="showScreen('screen-inventory')"><span>📦</span><span>Inventory</span></div>
+            <div class="scan-tab-btn" onclick="showScreen('screen-scan')">📷</div>
+            <div class="tab-item active" onclick="showScreen('screen-reports')"><span>📋</span><span>Reports</span></div>
+            <div class="tab-item" onclick="showScreen('screen-profile')"><span>🏪</span><span>Profile</span></div>
+          </div>
+        </div>
+
+        <!-- 11. PROFILE SCREEN -->
+        <div id="screen-profile" class="screen-content" style="background: #F9FAFB;">
+          <div class="top-nav">
+            <div style="font-size: 16px; font-weight: 700; color: #111827;">Merchant Profile</div>
+          </div>
+          <div style="padding: 16px; overflow-y: auto; flex: 1;">
+            <div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 16px; text-align: center; margin-bottom: 14px;">
+              <div style="width: 56px; height: 56px; border-radius: 28px; background: #EEF0FD; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏪</div>
+              <div style="font-size: 16px; font-weight: 700; color: #111827;">Ikeja Central Meds & Provisions</div>
+              <div style="font-size: 12px; color: #6B7280; margin-top: 2px;">Proprietor: Samuel Okonjo</div>
+              <div style="margin-top: 8px;">
+                <span style="background: #F0FDF4; color: #16A34A; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;">✓ Verified License: PCN-RET-884920</span>
+              </div>
+            </div>
+
+            <div style="background: white; border-radius: 10px; border: 1px solid #E5E7EB; overflow: hidden; margin-bottom: 14px;">
+              <div style="padding: 12px 14px; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; font-size: 13px;">
+                <span style="color: #374151;">Store Location</span>
+                <span style="font-weight: 600;">14 Allen Ave, Ikeja, Lagos</span>
+              </div>
+              <div style="padding: 12px 14px; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; font-size: 13px;">
+                <span style="color: #374151;">Contact Phone</span>
+                <span style="font-weight: 600;">+234 803 123 4567</span>
+              </div>
+              <div style="padding: 12px 14px; display: flex; justify-content: space-between; font-size: 13px;">
+                <span style="color: #374151;">Safety Cluster</span>
+                <span style="font-weight: 600; color: #3D52D5;">LAG-IKJ-04</span>
+              </div>
+            </div>
+
+            <button onclick="showScreen('screen-welcome')" style="width: 100%; padding: 12px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">Sign Out of Store</button>
+            <div style="text-align: center; font-size: 11px; color: #9CA3AF; margin-top: 12px;">Veryfy version 1.0 (Retailer Build)</div>
+          </div>
+          <div class="bottom-tab-bar">
+            <div class="tab-item" onclick="showScreen('screen-home')"><span>🏠</span><span>Home</span></div>
+            <div class="tab-item" onclick="showScreen('screen-inventory')"><span>📦</span><span>Inventory</span></div>
+            <div class="scan-tab-btn" onclick="showScreen('screen-scan')">📷</div>
+            <div class="tab-item" onclick="showScreen('screen-reports')"><span>📋</span><span>Reports</span></div>
+            <div class="tab-item active" onclick="showScreen('screen-profile')"><span>🏪</span><span>Profile</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Screen Navigator Panel -->
+    <div class="screen-selector-panel">
+      <div class="selector-title">Interactive Screens</div>
+
+      <div class="group-title">1. Onboarding & Authentication</div>
+      <button class="screen-btn active" onclick="showScreen('screen-welcome', this)">01. Welcome Screen</button>
+      <button class="screen-btn" onclick="showScreen('screen-role', this)">02. Role Selection Screen</button>
+      <button class="screen-btn" onclick="showScreen('screen-signin', this)">03. Retailer Sign In</button>
+
+      <div class="group-title">2. Main Retailer App Tabs</div>
+      <button class="screen-btn" onclick="showScreen('screen-home', this)">04. Retailer Dashboard (Home)</button>
+      <button class="screen-btn" onclick="showScreen('screen-inventory', this)">05. Stock Inventory List</button>
+      <button class="screen-btn" onclick="showScreen('screen-reports', this)">06. My Reports List</button>
+      <button class="screen-btn" onclick="showScreen('screen-profile', this)">07. Merchant Profile</button>
+
+      <div class="group-title">3. Scan & Verification Outcomes</div>
+      <button class="screen-btn" onclick="showScreen('screen-scan', this)">08. Camera Scanner Overlay</button>
+      <button class="screen-btn" onclick="showScreen('screen-manual-scan', this)">09. Enter Uni-code (Manual)</button>
+      <button class="screen-btn" onclick="showScreen('screen-result-verified', this)">10. Genuine Verification Result</button>
+      <button class="screen-btn" onclick="showScreen('screen-add-stock', this)">11. Add Stock to Inventory</button>
+      <button class="screen-btn" onclick="showScreen('screen-result-suspicious', this)">12. Suspicious Verification Result</button>
+      <button class="screen-btn" onclick="showScreen('screen-result-counterfeit', this)">13. Counterfeit Warning Outcome</button>
+      <button class="screen-btn" onclick="showScreen('screen-report-form', this)">14. Report Product Form</button>
+      <button class="screen-btn" onclick="showScreen('screen-report-success', this)">15. Report Received (Success)</button>
+    </div>
+  </div>
+
+  <script>
+    function showScreen(screenId, btnElement) {
+      document.querySelectorAll('.screen-content').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+
+      if (btnElement) {
+        document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
