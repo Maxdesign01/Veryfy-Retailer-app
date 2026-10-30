@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SplashScreen } from '../screens/auth/SplashScreen';
@@ -25,14 +26,14 @@ const StackInventoryRedirect: React.FC<{ navigation: any }> = ({ navigation }) =
   React.useEffect(() => {
     navigation.replace('Main', { screen: 'Inventory' });
   }, [navigation]);
-  return null;
+  return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
 };
 
 const StackScanRedirect: React.FC<{ navigation: any }> = ({ navigation }) => {
   React.useEffect(() => {
     navigation.replace('Main', { screen: 'Scan' });
   }, [navigation]);
-  return null;
+  return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
