@@ -29,6 +29,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
       if (hasTriggeredRef.current) return;
       hasTriggeredRef.current = true;
 
+      const navigateToNext = () => {
+        try {
+          if (typeof navigation?.replace === 'function') {
+            navigation.replace('Welcome');
+          } else {
+            navigation.navigate('Welcome');
+          }
+        } catch {
+          navigation?.navigate?.('Welcome');
+        }
+      };
+
       if (Platform.OS === 'web') {
         // On Web, native-stack does not animate screen replaces.
         // We run a 300ms ease-out exit transition, then replace the screen at 4300ms.
@@ -37,17 +49,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
             toValue: 0,
             duration: 300,
             easing: Easing.out(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.timing(scaleAnim, {
             toValue: 0.96,
             duration: 300,
             easing: Easing.out(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
         ]).start(() => {
-          navigation.replace('Welcome');
+          navigateToNext();
         });
+
+        // Safety fallback: if animation callback doesn't fire within 350ms, navigate anyway
+        setTimeout(navigateToNext, 350);
       } else {
         // On native platforms (iOS/Android), native-stack executes the 300ms fade transition.
         // Simultaneously animate opacity with ease-out curve.
@@ -58,7 +73,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
           useNativeDriver: true,
         }).start();
 
-        navigation.replace('Welcome');
+        navigateToNext();
       }
     }, 4000);
 
