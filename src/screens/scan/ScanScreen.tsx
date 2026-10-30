@@ -17,6 +17,7 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { mockVerificationResults } from '../../api/mockData';
 import { ArrowBackIcon } from '../../components/icons/ArrowBackIcon';
 import { NavQrScanIcon } from '../../components/icons/NavQrScanIcon';
+import { connectivityService } from '../../services/connectivityService';
 import { VerificationResult } from '../../types';
 
 interface ScanScreenProps {
@@ -27,7 +28,7 @@ interface ScanScreenProps {
 export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [torchOn, setTorchOn] = useState(false);
-  const [selectedOutcome, setSelectedOutcome] = useState<'verified' | 'suspicious' | 'no_match' | 'invalid'>('verified');
+  const [selectedOutcome, setSelectedOutcome] = useState<'verified' | 'suspicious' | 'no_match' | 'invalid' | 'offline'>('verified');
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [manualCode, setManualCode] = useState('VFY-2849-1036');
 
@@ -66,31 +67,54 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleVerify = (outcomeToUse?: string) => {
+  const handleVerify = async (outcomeToUse?: string) => {
     const outcome = outcomeToUse || selectedOutcome;
     let result: VerificationResult = mockVerificationResults.verified;
+    let isConnectionLost = outcome === 'offline';
+
     if (outcome === 'counterfeit' || outcome === 'invalid') {
       result = mockVerificationResults.counterfeit;
     } else if (outcome === 'suspicious') {
       result = mockVerificationResults.suspicious;
     }
 
-    const parentNav = navigation?.getParent?.() || navigation;
-    parentNav.navigate('VerifyingProduct', { result });
-  };
-
-  const handleManualVerify = () => {
-    setIsManualModalOpen(false);
-    const code = manualCode.trim().toLowerCase();
-    let result: VerificationResult = mockVerificationResults.verified;
-    if (code.includes('fake') || code.includes('count') || code.includes('inv')) {
-      result = mockVerificationResults.counterfeit;
-    } else if (code.includes('sus')) {
-      result = mockVerificationResults.suspicious;
+    const netStatus = await connectivityService.getConnectivityStatus();
+    if (!netStatus.isOnline) {
+      isConnectionLost = true;
     }
 
     const parentNav = navigation?.getParent?.() || navigation;
-    parentNav.navigate('VerifyingProduct', { result });
+    parentNav.navigate('VerifyingProduct', {
+      result,
+      code: 'VFY-2849-1036',
+      isSimulatedOffline: isConnectionLost,
+    });
+  };
+
+  const handleManualVerify = async () => {
+    setIsManualModalOpen(false);
+    const code = manualCode.trim();
+    const codeLower = code.toLowerCase();
+    let result: VerificationResult = mockVerificationResults.verified;
+    let isConnectionLost = codeLower.includes('offline') || codeLower.includes('lost');
+
+    if (codeLower.includes('fake') || codeLower.includes('count') || codeLower.includes('inv')) {
+      result = mockVerificationResults.counterfeit;
+    } else if (codeLower.includes('sus')) {
+      result = mockVerificationResults.suspicious;
+    }
+
+    const netStatus = await connectivityService.getConnectivityStatus();
+    if (!netStatus.isOnline) {
+      isConnectionLost = true;
+    }
+
+    const parentNav = navigation?.getParent?.() || navigation;
+    parentNav.navigate('VerifyingProduct', {
+      result,
+      code,
+      isSimulatedOffline: isConnectionLost,
+    });
   };
 
   return (
@@ -189,7 +213,7 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
 
         {/* Outcome Selector Chips */}
         <View style={styles.chipsRow}>
-          {(['verified', 'suspicious', 'no_match', 'invalid'] as const).map(
+          {(['verified', 'suspicious', 'no_match', 'invalid', 'offline'] as const).map(
             (outcome) => {
               const isSelected = selectedOutcome === outcome;
               const labels: Record<string, string> = {
@@ -197,6 +221,7 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
                 suspicious: 'Suspicious',
                 no_match: 'No match',
                 invalid: 'Invalid',
+                offline: 'Offline lost',
               };
               return (
                 <Pressable

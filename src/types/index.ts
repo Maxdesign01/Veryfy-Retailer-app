@@ -94,7 +94,7 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   SafetyGuidance: { fromNewStore?: boolean } | undefined;
   Notifications: undefined;
-  VerifyingProduct: { result: VerificationResult };
+  VerifyingProduct: { result?: VerificationResult; code?: string; isSimulatedOffline?: boolean };
   VerificationResult: { result: VerificationResult };
   SuspiciousResult: { result: VerificationResult };
   ReportProduct: { prefilledProduct?: Partial<Product> };
@@ -103,6 +103,8 @@ export type RootStackParamList = {
   AddStock: { product?: Product; onAdded?: (item: InventoryItem) => void } | undefined;
   Scan: undefined;
   Inventory: undefined;
+  ConnectionLost: { code?: string; result?: VerificationResult; errorReason?: 'offline' | 'timeout' | 'server_error' } | undefined;
+  VerifySmsUssd: { code?: string } | undefined;
 };
 
 export type MainTabParamList = {

@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Svg, { Circle, ClipPath, Defs, G, Mask, Path, Rect } from 'react-native-svg';
 import { mockVerificationResults } from '../../api/mockData';
+import { connectivityService } from '../../services/connectivityService';
 import { VerificationResult } from '../../types';
 
 interface VerifyingProductScreenProps {
@@ -139,6 +140,8 @@ export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({
 }) => {
   const result: VerificationResult =
     route?.params?.result || mockVerificationResults.verified;
+  const productCode: string = route?.params?.code || 'VFY-2849-1036';
+  const isSimulatedOffline: boolean = Boolean(route?.params?.isSimulatedOffline);
 
   // Step state:
   // 1 = reading done (checked), checking in-progress (spinner), reviewing pending
@@ -196,8 +199,23 @@ export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({
       setStep(3);
     }, 1400);
 
-    const t3 = setTimeout(() => {
-      if (result.outcome === 'suspicious' || result.outcome === 'counterfeit' || result.outcome === 'invalid') {
+    const t3 = setTimeout(async () => {
+      // Check device / service connectivity status
+      const netStatus = await connectivityService.getConnectivityStatus();
+      const isConnectionLost = isSimulatedOffline || !netStatus.isOnline;
+
+      if (isConnectionLost) {
+        // Connection lost during the check!
+        navigation.replace('ConnectionLost', {
+          code: productCode,
+          result,
+          errorReason: 'offline',
+        });
+      } else if (
+        result.outcome === 'suspicious' ||
+        result.outcome === 'counterfeit' ||
+        result.outcome === 'invalid'
+      ) {
         navigation.replace('SuspiciousResult', { result });
       } else {
         navigation.replace('VerificationResult', { result });
@@ -209,7 +227,7 @@ export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [navigation, result]);
+  }, [navigation, result, productCode, isSimulatedOffline]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>

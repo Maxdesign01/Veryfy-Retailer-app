@@ -16,9 +16,11 @@ import { AddStockScreen } from '../screens/inventory/AddStockScreen';
 import { ReportDetailsScreen } from '../screens/reports/ReportDetailsScreen';
 import { ReportProductScreen } from '../screens/reports/ReportProductScreen';
 import { ReportSuccessScreen } from '../screens/reports/ReportSuccessScreen';
+import { ConnectionLostScreen } from '../screens/scan/ConnectionLostScreen';
 import { SuspiciousResultScreen } from '../screens/scan/SuspiciousResultScreen';
 import { VerificationResultScreen } from '../screens/scan/VerificationResultScreen';
 import { VerifyingProductScreen } from '../screens/scan/VerifyingProductScreen';
+import { VerifySmsUssdScreen } from '../screens/scan/VerifySmsUssdScreen';
 import { RootStackParamList } from '../types';
 import { MainTabNavigator } from './MainTabNavigator';
 
@@ -85,6 +87,8 @@ export const RootNavigator = () => {
         <Stack.Screen name="ReportProduct" component={ReportProductScreen as any} />
         <Stack.Screen name="ReportDetails" component={ReportDetailsScreen as any} />
         <Stack.Screen name="ReportSuccess" component={ReportSuccessScreen as any} />
+        <Stack.Screen name="ConnectionLost" component={ConnectionLostScreen as any} />
+        <Stack.Screen name="VerifySmsUssd" component={VerifySmsUssdScreen as any} />
         <Stack.Screen name="Scan" component={StackScanRedirect} />
         <Stack.Screen name="Inventory" component={StackInventoryRedirect} />
       </Stack.Navigator>
