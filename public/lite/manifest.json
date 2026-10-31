@@ -1,7 +1,7 @@
 {
-  "name": "Veryfy Lite — Fast Product Verification",
-  "short_name": "Veryfy Lite",
-  "description": "Ultra-fast, low-bandwidth product verification for areas with weak or intermittent internet.",
+  "name": "Veryfy — Product Verification",
+  "short_name": "Veryfy",
+  "description": "Mobile-first product verification PWA for checking product authenticity.",
   "start_url": "/lite/",
   "scope": "/lite/",
   "display": "standalone",

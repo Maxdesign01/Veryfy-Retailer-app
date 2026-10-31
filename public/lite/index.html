@@ -3,142 +3,474 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Veryfy Lite — Fast Low-Bandwidth Product Verification</title>
+  <title>Veryfy — Product Verification PWA</title>
   
   <!-- PWA & Mobile Meta Tags -->
   <link rel="manifest" href="/lite/manifest.json">
   <meta name="theme-color" content="#3D52D5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Veryfy Lite">
+  <meta name="apple-mobile-web-app-title" content="Veryfy">
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/icon.png">
 
-  <!-- Minimalist High-Performance Stylesheet -->
+  <!-- Figma Handoff Accurate Stylesheet -->
   <link rel="stylesheet" href="/lite/lite-style.css">
 </head>
 <body>
   <div id="app-container">
-    <!-- 1. Header with Brand & Network Pill -->
-    <header class="top-header">
-      <div class="brand-wrapper">
-        <div class="brand-logo-mark">V</div>
-        <div class="brand-title">Veryfy</div>
-        <span class="lite-badge">Lite</span>
+
+    <!-- iOS Status Bar Replica -->
+    <div class="status-bar-ios">
+      <span id="status-bar-clock">9:41</span>
+      <div class="status-bar-icons">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
+          <rect x="0" y="7" width="3" height="4" rx="0.5" fill="#000000"/>
+          <rect x="4.5" y="5" width="3" height="6" rx="0.5" fill="#000000"/>
+          <rect x="9" y="2.5" width="3" height="8.5" rx="0.5" fill="#000000"/>
+          <rect x="13.5" y="0" width="3" height="11" rx="0.5" fill="#000000"/>
+        </svg>
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+          <path d="M8 10.5C9.1 10.5 10 9.6 10 8.5C10 7.4 9.1 6.5 8 6.5C6.9 6.5 6 7.4 6 8.5C6 9.6 6.9 10.5 8 10.5ZM8 3.5C10.76 3.5 13.26 4.62 15.07 6.43L16 5.5C13.93 3.43 11.11 2.15 8 2.15C4.89 2.15 2.07 3.43 0 5.5L0.93 6.43C2.74 4.62 5.24 3.5 8 3.5ZM8 0C11.98 0 15.58 1.62 18.17 4.24L17.24 5.17C14.89 2.82 11.61 1.35 8 1.35C4.39 1.35 1.11 2.82 -1.24 5.17L-2.17 4.24C0.42 1.62 4.02 0 8 0Z" fill="#000000" transform="scale(0.8) translate(1, 0)"/>
+        </svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
+          <rect x="1" y="1" width="20" height="10" rx="3" stroke="#000000" stroke-width="1"/>
+          <rect x="2.5" y="2.5" width="14" height="7" rx="1.5" fill="#000000"/>
+          <path d="M22 4.5V7.5" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: HOME / CHECK YOUR PRODUCT       -->
+    <!-- (Figma frames 32:9352, 46:9422, 46:9527)  -->
+    <!-- ========================================== -->
+    <div id="screen-home" class="pwa-screen active">
+      <h1 class="main-heading">Check your product</h1>
+      <p class="main-subheading">Enter the product code printed on the package, or scan it with your camera.</p>
+
+      <!-- Alert Banners (Hidden by default, shown during specific states) -->
+      <div id="banner-timeout" class="alert-banner-card timeout" style="display:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
+          <path d="M12 2L1 21H23L12 2Z" fill="#F59E0B"/>
+          <path d="M12 9V14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="17.5" r="1" fill="#FFFFFF"/>
+        </svg>
+        <span class="alert-banner-text">Verification timed out. No result was received. Try again.</span>
       </div>
 
-      <div id="network-pill" class="network-pill online">
-        <span class="network-dot"></span>
-        <span id="network-status-label">Online (Lite)</span>
-      </div>
-    </header>
-
-    <!-- 2. Main Content -->
-    <main>
-      <!-- Info Strip -->
-      <div class="info-strip">
-        <div><strong>Lite Mode Active:</strong> Optimized for 2G and low signal.</div>
-        <a href="/" class="switch-full-link">Full App &rarr;</a>
+      <div id="banner-service-unavailable" class="alert-banner-card service-unavailable" style="display:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
+          <circle cx="12" cy="12" r="10" fill="#DC2626"/>
+          <path d="M12 7V13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16.5" r="1" fill="#FFFFFF"/>
+        </svg>
+        <span class="alert-banner-text">Verification is unavailable right now. No result was received.</span>
       </div>
 
-      <!-- Input Form -->
-      <section class="input-section">
-        <label for="code-input" class="input-label">Enter Product Verification Code</label>
-        
-        <div class="input-row">
+      <div id="banner-connection-restored" class="alert-banner-card restored" style="display:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
+          <circle cx="12" cy="12" r="10" fill="#2563EB"/>
+          <circle cx="12" cy="8" r="1.1" fill="#FFFFFF"/>
+          <path d="M12 11.5V16.5M10.8 11.5H12" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="alert-banner-text">Connection restored. Retry to complete a live verification.</span>
+      </div>
+
+      <!-- Form Field -->
+      <div id="home-form-group" class="form-group">
+        <label for="pwa-code-input" class="field-label">Product verification code</label>
+        <div id="input-wrapper" class="input-box-wrapper">
+          <span class="input-leading-icon">
+            <!-- Figma person outline icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
           <input 
             type="text" 
-            id="code-input" 
-            class="code-input" 
-            placeholder="e.g. VFY-2849-1036" 
-            autocomplete="off" 
-            autocorrect="off" 
+            id="pwa-code-input" 
+            class="pwa-text-input" 
+            placeholder="e.g. VF-4829-7610"
+            autocomplete="off"
+            autocorrect="off"
             autocapitalize="characters"
             spellcheck="false"
           >
-          <div class="input-actions-inside">
-            <button type="button" id="btn-paste" class="btn-paste" title="Paste Code">Paste</button>
-            <button type="button" id="btn-clear" class="btn-clear" title="Clear Input">&times;</button>
+          <span class="input-trailing-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+        </div>
+
+        <div id="input-helper" class="input-helper-text">
+          <span>Format: VF-4829-7610</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button type="button" id="btn-home-verify" class="btn-primary-action" disabled>
+        <span id="btn-home-verify-text">Verify product &rarr;</span>
+      </button>
+
+      <button type="button" id="btn-home-scan" class="btn-secondary-action">
+        Scan product code &rarr;
+      </button>
+
+      <!-- Offline Notice Card (Figma USSD fallback.png) -->
+      <div id="home-offline-card" class="home-offline-card" style="display:none;">
+        <div class="home-offline-title">You're offline</div>
+        <div class="home-offline-desc">Web verification needs internet. You can use SMS or USSD with mobile network coverage.</div>
+      </div>
+
+      <!-- Links & Disclaimer -->
+      <button type="button" id="link-sms-ussd" class="underlined-text-link">
+        No internet? Verify by SMS or USSD &rarr;
+      </button>
+
+      <div class="disclaimer-box">
+        Important: A valid code alone does not prove the product is genuine. Check the HiddenMark and packaging for signs of tampering.
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: SCAN PRODUCT CODE (SCANNER)     -->
+    <!-- (Figma frames 34:15, 46:9671, 46:9751)    -->
+    <!-- ========================================== -->
+    <div id="screen-scanner" class="pwa-screen" style="padding:0; background:#000000;">
+      <!-- Scanner Top Bar -->
+      <div class="screen-nav-bar" style="padding: 16px 20px 8px 20px; margin-bottom:0; background:#FFFFFF;">
+        <button type="button" id="btn-scanner-back" class="btn-circle-nav" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2 class="nav-bar-title">Scan product code</h2>
+        <button type="button" class="btn-circle-nav" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scanner Viewport -->
+      <div class="scanner-viewport-wrapper">
+        <video id="scanner-video" class="scanner-camera-video" playsinline autoplay muted></video>
+
+        <div class="scanner-viewfinder-overlay">
+          <!-- Torch Button -->
+          <button type="button" id="btn-torch-toggle" class="torch-toggle-btn" aria-label="Torch">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </button>
+
+          <!-- 4 Corner Target Box -->
+          <div id="scanner-target-frame" class="scanner-target-frame">
+            <div class="target-corner corner-tl"></div>
+            <div class="target-corner corner-tr"></div>
+            <div class="target-corner corner-bl"></div>
+            <div class="target-corner corner-br"></div>
+            <div class="laser-scan-line"></div>
+          </div>
+
+          <div id="scanner-status-text" class="scanner-status-text">
+            Align the product code within the frame.
           </div>
         </div>
 
-        <!-- Quick Test Chips -->
-        <div class="quick-chips-row">
-          <span class="chips-label">Quick test:</span>
-          <button type="button" class="chip-btn" data-code="VFY-2849-1036">Genuine</button>
-          <button type="button" class="chip-btn" data-code="LNT-2024-91">Suspicious</button>
-          <button type="button" class="chip-btn" data-code="FAKE-AMX-001">Counterfeit</button>
-          <button type="button" class="chip-btn" data-code="OFFLINE-LOST">Offline</button>
-        </div>
-
-        <button type="button" id="btn-verify" class="btn-primary">
-          Verify Product (Low Data)
-        </button>
-
-        <button type="button" id="btn-toggle-camera" class="btn-secondary">
-          &#128247; Scan Barcode / QR
-        </button>
-      </section>
-
-      <!-- Optional Lightweight Camera Scanner -->
-      <div id="camera-view-container">
-        <video id="camera-video" playsinline autoplay muted></video>
-        <div class="camera-controls">
-          <span>Point camera at packaging code</span>
-          <button type="button" id="btn-close-camera" style="background:#DC2626; color:#FFF; border:none; padding:4px 8px; border-radius:4px; font-weight:700;">Cancel</button>
+        <!-- Camera Permission Denied / Unavailable Overlay -->
+        <div id="camera-error-overlay" class="camera-error-overlay">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          <div id="camera-error-title" class="camera-error-title">Camera access is off</div>
+          <div id="camera-error-desc" class="camera-error-desc">Allow camera access in your phone settings to scan, or enter the code manually.</div>
         </div>
       </div>
 
-      <!-- Verification In-Progress Status Card -->
-      <div id="status-card" class="status-card">
-        <div id="status-text" class="status-text">Connecting via low-bandwidth channel...</div>
-        <div id="status-bytes" class="status-bytes">Data transferred: 118 bytes</div>
+      <!-- Scanner Bottom Sheet -->
+      <div class="scanner-bottom-sheet">
+        <div class="sheet-drag-handle"></div>
+        <h3 class="sheet-title">Can't scan the code?</h3>
+        <p class="sheet-desc">Enter the code printed on the packaging instead.</p>
+
+        <button type="button" id="btn-sheet-manual" class="btn-primary-action" style="margin-bottom:12px;">
+          Enter code manually
+        </button>
+        <button type="button" id="btn-sheet-cancel" class="underlined-text-link" style="justify-content:center; width:100%; color:#3D52D5; margin-bottom:0;">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: VERIFICATION RESULT             -->
+    <!-- (Figma frames 58:442, 58:510, 58:476)     -->
+    <!-- ========================================== -->
+    <div id="screen-result" class="pwa-screen">
+      <div class="screen-nav-bar">
+        <button type="button" id="btn-result-back" class="btn-circle-nav" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2 class="nav-bar-title">Verification result</h2>
+        <div style="width:44px;"></div>
       </div>
 
       <!-- Result Card -->
-      <div id="result-card" class="result-card">
-        <div class="badge-header">
-          <span id="result-badge" class="status-badge">GENUINE • VERIFIED</span>
+      <div class="result-card-container">
+        <div id="result-badge-pill" class="result-badge-pill verified">
+          <!-- Icon + label populated by JS -->
         </div>
 
-        <h2 id="result-title" class="result-title">Product Title</h2>
+        <h3 id="result-main-heading" class="result-main-heading">Product record verified.</h3>
+        <p id="result-explanation-text" class="result-explanation-text">
+          This code matches a Veryfy product record. Check the HiddenMark and packaging for signs of tampering.
+        </p>
+      </div>
 
-        <div id="result-grid" class="result-grid">
-          <!-- Populated by JS -->
+      <!-- Metadata Rows Group -->
+      <div class="metadata-rows-group">
+        <div class="metadata-row-item">
+          <span class="metadata-label">Code</span>
+          <span id="result-meta-code" class="metadata-val">VF-4829-7610</span>
         </div>
-
-        <div id="result-notes" class="result-notes">
-          <!-- Security Notes -->
-        </div>
-
-        <!-- Offline Fallback Triggers (Hidden unless connection lost) -->
-        <div id="offline-actions" class="offline-fallback-actions" style="display:none;">
-          <a id="btn-sms" href="sms:" class="btn-sms">
-            Verify via SMS (No Internet)
-          </a>
-          <a id="btn-ussd" href="tel:" class="btn-ussd">
-            Verify via USSD (Dial Code)
-          </a>
+        <div class="metadata-row-item">
+          <span class="metadata-label">Checked</span>
+          <span id="result-meta-timestamp" class="metadata-val">16 Oct 2026, 10:42 AM</span>
         </div>
       </div>
 
-      <!-- Offline History (Recent Scans) -->
-      <section class="history-section">
-        <div class="history-header">
-          <span class="history-title">Recent Checks (Saved on Device)</span>
-          <button type="button" id="btn-clear-history" class="btn-clear-history">Clear</button>
-        </div>
-        <div id="history-list" class="history-list">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-    </main>
+      <!-- Action Buttons -->
+      <button type="button" id="btn-result-another" class="btn-primary-action">
+        Verify another product &rarr;
+      </button>
 
-    <!-- Footer -->
-    <footer>
-      Veryfy Retailer Lite &bull; Ultra-low data mode<br>
-      <a href="/">Open Full Veryfy Experience &rarr;</a>
-    </footer>
+      <button type="button" id="btn-result-report" class="btn-secondary-action" style="display:none;">
+        Report suspicious product &rarr;
+      </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 4: REPORT SUSPICIOUS PRODUCT       -->
+    <!-- (Figma frame 85:9981)                     -->
+    <!-- ========================================== -->
+    <div id="screen-report" class="pwa-screen">
+      <div class="screen-nav-bar">
+        <button type="button" id="btn-report-back" class="btn-circle-nav" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2 class="nav-bar-title">Report a product</h2>
+        <div style="width:44px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="report-code-input" class="field-label">Product verification code</label>
+        <div class="input-box-wrapper">
+          <input 
+            type="text" 
+            id="report-code-input" 
+            class="pwa-text-input" 
+            placeholder="Place holder"
+          >
+        </div>
+        <div class="input-helper-text">
+          Enter the code printed beside the HiddenMark
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:24px;">
+        <label for="report-description-input" class="field-label">Label</label>
+        <textarea 
+          id="report-description-input" 
+          class="pwa-textarea-input" 
+          placeholder="Tell us what you noticed"
+        ></textarea>
+        <div class="input-helper-text">
+          Description
+        </div>
+      </div>
+
+      <div class="alert-banner-card timeout" style="margin-bottom:28px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
+          <path d="M12 2L1 21H23L12 2Z" fill="#F59E0B"/>
+          <path d="M12 9V14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="17.5" r="1" fill="#FFFFFF"/>
+        </svg>
+        <span class="alert-banner-text">An invalid code alone does not prove a product is counterfeit.</span>
+      </div>
+
+      <button type="button" id="btn-submit-report" class="btn-primary-action">
+        Submit report
+      </button>
+
+      <button type="button" id="btn-cancel-report" class="btn-secondary-action">
+        Cancel
+      </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: OFFLINE PREVIOUSLY VIEWED INFO  -->
+    <!-- (Figma frame PWA · Offline)               -->
+    <!-- ========================================== -->
+    <div id="screen-previously-viewed" class="pwa-screen">
+      <div class="screen-nav-bar">
+        <button type="button" id="btn-prev-viewed-back" class="btn-circle-nav" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div style="flex:1;"></div>
+        <div style="width:44px;"></div>
+      </div>
+
+      <div class="offline-cached-card">
+        <h2 class="offline-cached-title">Previously viewed product</h2>
+        <div class="offline-cached-subtitle">Offline copy &bull; Not a new verification</div>
+        <p class="offline-cached-body">Product details saved from an earlier successful lookup may appear here.</p>
+        <p id="prev-viewed-timestamp" class="offline-cached-body" style="font-weight:600; color:#1D1D1D;">Last updated: shown from saved record</p>
+        
+        <h3 class="offline-cached-section-title">Live verification unavailable</h3>
+        <p class="offline-cached-body">Reconnect to refresh this information. Do not interpret cached information as a fresh authenticity check.</p>
+      </div>
+
+      <button type="button" id="link-prev-viewed-sms" class="underlined-text-link">
+        No internet? Verify by SMS or USSD &rarr;
+      </button>
+
+      <div class="disclaimer-box">
+        Important: A valid code alone does not prove the product is genuine. Check the HiddenMark and packaging for signs of tampering.
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 6: VERIFY BY SMS OR USSD GUIDANCE   -->
+    <!-- (Figma node 08 · Verify by SMS or USSD)    -->
+    <!-- ========================================== -->
+    <div id="screen-sms-ussd" class="pwa-screen">
+      <div class="screen-nav-bar" style="margin-bottom:12px;">
+        <button type="button" id="btn-sms-back" class="btn-circle-nav" aria-label="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div style="flex:1;"></div>
+        <div style="width:44px;"></div>
+      </div>
+
+      <h1 class="main-heading" style="font-size:28px; margin-bottom:8px;">Verify by SMS or USSD</h1>
+      <p class="main-subheading" style="margin-bottom:20px;">Use either method below to check your code.</p>
+
+      <div class="sms-ussd-info-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
+          <circle cx="12" cy="12" r="10" fill="#2563EB"/>
+          <circle cx="12" cy="8" r="1.1" fill="#FFFFFF"/>
+          <path d="M12 11.5V16.5M10.8 11.5H12" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="sms-ussd-info-text">
+          No internet needed. A mobile network signal is required. Standard network charges may apply.
+        </span>
+      </div>
+
+      <!-- SMS Section -->
+      <div class="guidance-section-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Verify by SMS</span>
+      </div>
+
+      <div class="guidance-steps-list">
+        <div class="guidance-step-row">
+          <span class="step-num">1.</span>
+          <span>Find the product verification code on the packaging.</span>
+        </div>
+        <div class="guidance-step-row">
+          <span class="step-num">2.</span>
+          <span>Open Messages. Send the code to the SMS service number printed on the packaging.</span>
+        </div>
+        <div class="guidance-step-row">
+          <span class="step-num">3.</span>
+          <span>Wait for the verification reply.</span>
+        </div>
+      </div>
+
+      <button type="button" id="btn-open-messages" class="guidance-action-btn">
+        Open Messages
+      </button>
+
+      <div class="guidance-divider"></div>
+
+      <!-- USSD Section -->
+      <div class="guidance-section-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D1D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span>Verify by USSD</span>
+      </div>
+
+      <div class="guidance-steps-list">
+        <div class="guidance-step-row">
+          <span class="step-num">1.</span>
+          <span>Find the USSD code on the packaging.</span>
+        </div>
+        <div class="guidance-step-row">
+          <span class="step-num">2.</span>
+          <span>Open Phone and dial that USSD code.</span>
+        </div>
+        <div class="guidance-step-row">
+          <span class="step-num">3.</span>
+          <span>Follow the prompts to enter the product verification code.</span>
+        </div>
+        <div class="guidance-step-row">
+          <span class="step-num">4.</span>
+          <span>Read the result on your phone.</span>
+        </div>
+      </div>
+
+      <button type="button" id="btn-open-phone" class="guidance-action-btn">
+        Open Phone
+      </button>
+
+      <div class="guidance-divider"></div>
+
+      <div class="disclaimer-box">
+        Important: A valid code alone does not prove the product is genuine. Check the HiddenMark and packaging for signs of tampering.
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- QA / FIGMA STATE PREVIEW TOOLBAR           -->
+    <!-- Allows reviewer to jump to any screen/state-->
+    <!-- ========================================== -->
+    <div class="qa-state-bar">
+      <span class="qa-state-title">QA States:</span>
+      <button type="button" class="qa-chip" data-qa="home-empty">Home (Default)</button>
+      <button type="button" class="qa-chip" data-qa="home-valid">Valid Code</button>
+      <button type="button" class="qa-chip" data-qa="home-invalid">Invalid Code</button>
+      <button type="button" class="qa-chip" data-qa="home-offline">You're Offline</button>
+      <button type="button" class="qa-chip" data-qa="home-timeout">Timeout Error</button>
+      <button type="button" class="qa-chip" data-qa="home-unavailable">Service Error</button>
+      <button type="button" class="qa-chip" data-qa="home-restored">Restored</button>
+      <button type="button" class="qa-chip" data-qa="scan-live">Scanner Live</button>
+      <button type="button" class="qa-chip" data-qa="scan-denied">Camera Denied</button>
+      <button type="button" class="qa-chip" data-qa="result-verified">Verified Result</button>
+      <button type="button" class="qa-chip" data-qa="result-suspicious">Suspicious Result</button>
+      <button type="button" class="qa-chip" data-qa="result-not-verified">Not Verified</button>
+      <button type="button" class="qa-chip" data-qa="result-invalid">Invalid Result</button>
+      <button type="button" class="qa-chip" data-qa="report-form">Report Form</button>
+      <button type="button" class="qa-chip" data-qa="prev-viewed">Offline Cached</button>
+      <button type="button" class="qa-chip" data-qa="sms-ussd">SMS/USSD</button>
+    </div>
+
   </div>
 
   <script src="/lite/lite-app.js"></script>
