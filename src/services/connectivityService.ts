@@ -1,10 +1,11 @@
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import * as Network from 'expo-network';
 
 export interface ConnectivityStatus {
   isOnline: boolean;
   isServerReachable: boolean;
   connectionType: string;
+  isLowBandwidth?: boolean;
 }
 
 type ConnectivityListener = (status: ConnectivityStatus) => void;
@@ -15,8 +16,10 @@ class ConnectivityService {
     isOnline: true,
     isServerReachable: true,
     connectionType: 'unknown',
+    isLowBandwidth: false,
   };
   private simulatedOffline: boolean = false;
+  private simulatedLowBandwidth: boolean = false;
 
   constructor() {
     this.init();
@@ -30,6 +33,13 @@ class ConnectivityService {
       window.addEventListener('offline', () => {
         this.updateStatus();
       });
+
+      const nav = navigator as any;
+      if (nav && nav.connection) {
+        nav.connection.addEventListener('change', () => {
+          this.updateStatus();
+        });
+      }
     }
   }
 
@@ -45,6 +55,15 @@ class ConnectivityService {
     return this.simulatedOffline;
   }
 
+  public setSimulatedLowBandwidth(simulated: boolean) {
+    this.simulatedLowBandwidth = simulated;
+    this.notifyListeners();
+  }
+
+  public isSimulatedLowBandwidth(): boolean {
+    return this.simulatedLowBandwidth;
+  }
+
   /**
    * Query the real network status from the device / browser
    */
@@ -54,15 +73,32 @@ class ConnectivityService {
         isOnline: false,
         isServerReachable: false,
         connectionType: 'none',
+        isLowBandwidth: false,
       };
     }
 
     if (Platform.OS === 'web') {
       const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      let isLow = this.simulatedLowBandwidth;
+
+      const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
+      if (nav && nav.connection) {
+        const conn = nav.connection;
+        if (
+          conn.effectiveType === '2g' ||
+          conn.effectiveType === 'slow-2g' ||
+          (conn.rtt && conn.rtt > 1000) ||
+          (conn.saveData === true)
+        ) {
+          isLow = true;
+        }
+      }
+
       this.lastKnownStatus = {
         isOnline,
         isServerReachable: isOnline,
-        connectionType: isOnline ? 'wifi' : 'none',
+        connectionType: isOnline ? (isLow ? 'cellular-2g' : 'wifi') : 'none',
+        isLowBandwidth: isLow,
       };
       return this.lastKnownStatus;
     }
@@ -70,11 +106,13 @@ class ConnectivityService {
     try {
       const networkState = await Network.getNetworkStateAsync();
       const isOnline = Boolean(networkState.isConnected && networkState.isInternetReachable !== false);
+      const isLow = this.simulatedLowBandwidth || networkState.type === Network.NetworkStateType.CELLULAR_2G;
 
       this.lastKnownStatus = {
         isOnline,
         isServerReachable: isOnline,
         connectionType: networkState.type?.toString() || 'unknown',
+        isLowBandwidth: isLow,
       };
       return this.lastKnownStatus;
     } catch {
@@ -99,9 +137,18 @@ class ConnectivityService {
       return { reachable: false, reason: 'offline' };
     }
 
-    // In production, this would ping the health endpoint (e.g. /api/health or /v1/ping).
-    // For local mock / hybrid testing, simulate realistic connection check.
     return { reachable: true };
+  }
+
+  /**
+   * Helper to open Veryfy Lite PWA
+   */
+  public openVeryfyLite() {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.href = '/lite/';
+    } else {
+      Linking.openURL('https://veryfyretailerapp.netlify.app/lite');
+    }
   }
 
   public subscribe(listener: ConnectivityListener): () => void {
@@ -121,7 +168,7 @@ class ConnectivityService {
 
   private notifyListeners() {
     const status: ConnectivityStatus = this.simulatedOffline
-      ? { isOnline: false, isServerReachable: false, connectionType: 'none' }
+      ? { isOnline: false, isServerReachable: false, connectionType: 'none', isLowBandwidth: false }
       : this.lastKnownStatus;
 
     this.listeners.forEach((listener) => {

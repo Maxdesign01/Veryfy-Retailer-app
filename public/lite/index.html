@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Veryfy Lite — Fast Low-Bandwidth Product Verification</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="/lite/manifest.json">
+  <meta name="theme-color" content="#3D52D5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Veryfy Lite">
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/icon.png">
+
+  <!-- Minimalist High-Performance Stylesheet -->
+  <link rel="stylesheet" href="/lite/lite-style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- 1. Header with Brand & Network Pill -->
+    <header class="top-header">
+      <div class="brand-wrapper">
+        <div class="brand-logo-mark">V</div>
+        <div class="brand-title">Veryfy</div>
+        <span class="lite-badge">Lite</span>
+      </div>
+
+      <div id="network-pill" class="network-pill online">
+        <span class="network-dot"></span>
+        <span id="network-status-label">Online (Lite)</span>
+      </div>
+    </header>
+
+    <!-- 2. Main Content -->
+    <main>
+      <!-- Info Strip -->
+      <div class="info-strip">
+        <div><strong>Lite Mode Active:</strong> Optimized for 2G and low signal.</div>
+        <a href="/" class="switch-full-link">Full App &rarr;</a>
+      </div>
+
+      <!-- Input Form -->
+      <section class="input-section">
+        <label for="code-input" class="input-label">Enter Product Verification Code</label>
+        
+        <div class="input-row">
+          <input 
+            type="text" 
+            id="code-input" 
+            class="code-input" 
+            placeholder="e.g. VFY-2849-1036" 
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="characters"
+            spellcheck="false"
+          >
+          <div class="input-actions-inside">
+            <button type="button" id="btn-paste" class="btn-paste" title="Paste Code">Paste</button>
+            <button type="button" id="btn-clear" class="btn-clear" title="Clear Input">&times;</button>
+          </div>
+        </div>
+
+        <!-- Quick Test Chips -->
+        <div class="quick-chips-row">
+          <span class="chips-label">Quick test:</span>
+          <button type="button" class="chip-btn" data-code="VFY-2849-1036">Genuine</button>
+          <button type="button" class="chip-btn" data-code="LNT-2024-91">Suspicious</button>
+          <button type="button" class="chip-btn" data-code="FAKE-AMX-001">Counterfeit</button>
+          <button type="button" class="chip-btn" data-code="OFFLINE-LOST">Offline</button>
+        </div>
+
+        <button type="button" id="btn-verify" class="btn-primary">
+          Verify Product (Low Data)
+        </button>
+
+        <button type="button" id="btn-toggle-camera" class="btn-secondary">
+          &#128247; Scan Barcode / QR
+        </button>
+      </section>
+
+      <!-- Optional Lightweight Camera Scanner -->
+      <div id="camera-view-container">
+        <video id="camera-video" playsinline autoplay muted></video>
+        <div class="camera-controls">
+          <span>Point camera at packaging code</span>
+          <button type="button" id="btn-close-camera" style="background:#DC2626; color:#FFF; border:none; padding:4px 8px; border-radius:4px; font-weight:700;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Verification In-Progress Status Card -->
+      <div id="status-card" class="status-card">
+        <div id="status-text" class="status-text">Connecting via low-bandwidth channel...</div>
+        <div id="status-bytes" class="status-bytes">Data transferred: 118 bytes</div>
+      </div>
+
+      <!-- Result Card -->
+      <div id="result-card" class="result-card">
+        <div class="badge-header">
+          <span id="result-badge" class="status-badge">GENUINE • VERIFIED</span>
+        </div>
+
+        <h2 id="result-title" class="result-title">Product Title</h2>
+
+        <div id="result-grid" class="result-grid">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="result-notes" class="result-notes">
+          <!-- Security Notes -->
+        </div>
+
+        <!-- Offline Fallback Triggers (Hidden unless connection lost) -->
+        <div id="offline-actions" class="offline-fallback-actions" style="display:none;">
+          <a id="btn-sms" href="sms:" class="btn-sms">
+            Verify via SMS (No Internet)
+          </a>
+          <a id="btn-ussd" href="tel:" class="btn-ussd">
+            Verify via USSD (Dial Code)
+          </a>
+        </div>
+      </div>
+
+      <!-- Offline History (Recent Scans) -->
+      <section class="history-section">
+        <div class="history-header">
+          <span class="history-title">Recent Checks (Saved on Device)</span>
+          <button type="button" id="btn-clear-history" class="btn-clear-history">Clear</button>
+        </div>
+        <div id="history-list" class="history-list">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      Veryfy Retailer Lite &bull; Ultra-low data mode<br>
+      <a href="/">Open Full Veryfy Experience &rarr;</a>
+    </footer>
+  </div>
+
+  <script src="/lite/lite-app.js"></script>
+</body>
+</html>

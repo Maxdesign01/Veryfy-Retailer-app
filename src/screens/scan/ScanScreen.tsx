@@ -277,6 +277,19 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </Pressable>
+
+        {/* Veryfy Lite Shortcut */}
+        <Pressable
+          style={styles.liteModeButton}
+          onPress={() => connectivityService.openVeryfyLite()}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Low signal? Open Veryfy Lite"
+        >
+          <Text style={styles.liteModeButtonText}>
+            ⚡ Low signal? <Text style={styles.liteModeButtonLink}>Open Veryfy Lite (Low Data) &rarr;</Text>
+          </Text>
+        </Pressable>
       </View>
 
       {/* Enter Uni-code Manual Modal (Frame 503:4496) */}
@@ -584,6 +597,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#3D52D5',
+  },
+  liteModeButton: {
+    alignSelf: 'center',
+    paddingVertical: 6,
+    marginTop: 4,
+  },
+  liteModeButtonText: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  liteModeButtonLink: {
+    color: '#3D52D5',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   modalOverlay: {
     flex: 1,

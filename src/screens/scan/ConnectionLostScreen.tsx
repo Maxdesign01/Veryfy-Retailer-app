@@ -71,6 +71,10 @@ export const ConnectionLostScreen: React.FC<ConnectionLostScreenProps> = ({
     navigation.navigate('VerifySmsUssd', { code: preservedCode });
   };
 
+  const handleOpenLite = () => {
+    connectivityService.openVeryfyLite();
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
@@ -138,7 +142,7 @@ export const ConnectionLostScreen: React.FC<ConnectionLostScreenProps> = ({
             <Text style={styles.secondaryButtonText}>Use SMS or USSD</Text>
           </Pressable>
 
-          {/* 3. Text Link */}
+          {/* 3. Text Links */}
           <Pressable
             onPress={handleOpenSmsUssd}
             style={styles.textLinkWrapper}
@@ -148,6 +152,18 @@ export const ConnectionLostScreen: React.FC<ConnectionLostScreenProps> = ({
           >
             <Text style={styles.textLink}>
               No internet? Verify by SMS or USSD &rarr;
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleOpenLite}
+            style={styles.liteLinkWrapper}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Weak 2G signal? Switch to Veryfy Lite"
+          >
+            <Text style={styles.liteLinkText}>
+              &#9889; Weak 2G signal? Switch to Veryfy Lite (Low Data) &rarr;
             </Text>
           </Pressable>
         </View>
@@ -237,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   secondaryButtonText: {
     fontFamily: 'Geist_600SemiBold',
@@ -263,13 +279,25 @@ const styles = StyleSheet.create({
   textLinkWrapper: {
     alignSelf: 'flex-start',
     paddingVertical: 4,
-    marginBottom: 28,
+    marginBottom: 8,
   },
   textLink: {
     fontFamily: 'Geist_500Medium',
     fontSize: 14,
     lineHeight: 20,
     color: '#0D9488',
+    textDecorationLine: 'underline',
+  },
+  liteLinkWrapper: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    marginBottom: 24,
+  },
+  liteLinkText: {
+    fontFamily: 'Geist_500Medium',
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#3D52D5',
     textDecorationLine: 'underline',
   },
   disclaimerContainer: {
