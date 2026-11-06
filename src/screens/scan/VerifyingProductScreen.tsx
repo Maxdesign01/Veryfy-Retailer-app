@@ -211,14 +211,10 @@ export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({
           result,
           errorReason: 'offline',
         });
-      } else if (
-        result.outcome === 'suspicious' ||
-        result.outcome === 'counterfeit' ||
-        result.outcome === 'invalid'
-      ) {
-        navigation.replace('SuspiciousResult', { result });
-      } else {
+      } else if (result.outcome === 'verified') {
         navigation.replace('VerificationResult', { result });
+      } else {
+        navigation.replace('SuspiciousResult', { result });
       }
     }, 1800);
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Easing,
   KeyboardAvoidingView,
@@ -14,7 +15,10 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { mockVerificationResults } from '../../api/mockData';
+import {
+  getPrimaryDemoCodes,
+  resolveVerificationCode,
+} from '../../services/verificationCodeService';
 import { ArrowBackIcon } from '../../components/icons/ArrowBackIcon';
 import { NavQrScanIcon } from '../../components/icons/NavQrScanIcon';
 import { connectivityService } from '../../services/connectivityService';
@@ -28,9 +32,9 @@ interface ScanScreenProps {
 export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [torchOn, setTorchOn] = useState(false);
-  const [selectedOutcome, setSelectedOutcome] = useState<'verified' | 'suspicious' | 'no_match' | 'invalid' | 'offline'>('verified');
+  const [selectedOutcome, setSelectedOutcome] = useState<'verified' | 'not_verified' | 'invalid' | 'suspicious' | 'offline'>('verified');
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
-  const [manualCode, setManualCode] = useState('VFY-2849-1036');
+  const [manualCode, setManualCode] = useState('VF-2026-0001');
 
   // Scanning laser beam animated translation
   const scanLineAnim = useRef(new Animated.Value(0)).current;
@@ -69,14 +73,18 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
 
   const handleVerify = async (outcomeToUse?: string) => {
     const outcome = outcomeToUse || selectedOutcome;
-    let result: VerificationResult = mockVerificationResults.verified;
+    let codeToUse = 'VF-2026-0001';
     let isConnectionLost = outcome === 'offline';
 
-    if (outcome === 'counterfeit' || outcome === 'invalid') {
-      result = mockVerificationResults.counterfeit;
-    } else if (outcome === 'suspicious') {
-      result = mockVerificationResults.suspicious;
+    if (outcome === 'suspicious') {
+      codeToUse = 'VF-2026-0004';
+    } else if (outcome === 'invalid') {
+      codeToUse = 'VF-2026-0003';
+    } else if (outcome === 'not_verified') {
+      codeToUse = 'VF-2026-0002';
     }
+
+    const result: VerificationResult = resolveVerificationCode(codeToUse);
 
     const netStatus = await connectivityService.getConnectivityStatus();
     if (!netStatus.isOnline) {
@@ -86,23 +94,28 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
     const parentNav = navigation?.getParent?.() || navigation;
     parentNav.navigate('VerifyingProduct', {
       result,
-      code: 'VFY-2849-1036',
+      code: codeToUse,
       isSimulatedOffline: isConnectionLost,
     });
   };
 
   const handleManualVerify = async () => {
-    setIsManualModalOpen(false);
     const code = manualCode.trim();
-    const codeLower = code.toLowerCase();
-    let result: VerificationResult = mockVerificationResults.verified;
-    let isConnectionLost = codeLower.includes('offline') || codeLower.includes('lost');
-
-    if (codeLower.includes('fake') || codeLower.includes('count') || codeLower.includes('inv')) {
-      result = mockVerificationResults.counterfeit;
-    } else if (codeLower.includes('sus')) {
-      result = mockVerificationResults.suspicious;
+    if (!code) {
+      Alert.alert(
+        'Code Required',
+        'Please enter a product verification code before verifying.',
+        [{ text: 'OK' }]
+      );
+      return;
     }
+
+    setIsManualModalOpen(false);
+    const codeUpper = code.toUpperCase();
+    let isConnectionLost =
+      codeUpper.includes('OFFLINE') || codeUpper.includes('LOST');
+
+    const result: VerificationResult = resolveVerificationCode(code);
 
     const netStatus = await connectivityService.getConnectivityStatus();
     if (!netStatus.isOnline) {
@@ -213,14 +226,14 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
 
         {/* Outcome Selector Chips */}
         <View style={styles.chipsRow}>
-          {(['verified', 'suspicious', 'no_match', 'invalid', 'offline'] as const).map(
+          {(['verified', 'not_verified', 'invalid', 'suspicious', 'offline'] as const).map(
             (outcome) => {
               const isSelected = selectedOutcome === outcome;
               const labels: Record<string, string> = {
                 verified: 'Verified',
-                suspicious: 'Suspicious',
-                no_match: 'No match',
+                not_verified: 'Not Verified',
                 invalid: 'Invalid',
+                suspicious: 'Suspicious',
                 offline: 'Offline lost',
               };
               return (
@@ -350,11 +363,42 @@ export const ScanScreen: React.FC<ScanScreenProps> = ({ navigation }) => {
                 style={styles.textInput}
                 value={manualCode}
                 onChangeText={setManualCode}
-                placeholder="VFY-2849-1036"
+                placeholder="VF-2026-0001"
                 placeholderTextColor="#9CA3AF"
                 autoCapitalize="characters"
                 autoCorrect={false}
               />
+            </View>
+
+            {/* Quick Demo Code Selection Chips */}
+            <View style={styles.demoCodesGroup}>
+              <Text style={styles.demoCodesTitle}>Demo verification codes:</Text>
+              <View style={styles.demoCodesRow}>
+                {getPrimaryDemoCodes().map((item) => {
+                  const isSelected = manualCode.trim().toUpperCase() === item.code;
+                  return (
+                    <Pressable
+                      key={item.code}
+                      style={[
+                        styles.demoCodeChip,
+                        isSelected && styles.demoCodeChipActive,
+                      ]}
+                      onPress={() => setManualCode(item.code)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select code ${item.code}`}
+                    >
+                      <Text
+                        style={[
+                          styles.demoCodeChipText,
+                          isSelected && styles.demoCodeChipTextActive,
+                        ]}
+                      >
+                        {item.code.replace('VF-2026-', '').replace('VERIFY-2026-', '')} · {item.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
 
             {/* Inline Notice Box */}
@@ -670,6 +714,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#161616',
     letterSpacing: 0.5,
+  },
+  demoCodesGroup: {
+    marginBottom: 14,
+  },
+  demoCodesTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 6,
+  },
+  demoCodesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  demoCodeChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  demoCodeChipActive: {
+    backgroundColor: '#EEF2FF',
+    borderColor: '#3D52D5',
+  },
+  demoCodeChipText: {
+    fontSize: 11,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  demoCodeChipTextActive: {
+    color: '#3D52D5',
+    fontWeight: '600',
   },
   noticeBox: {
     flexDirection: 'row',

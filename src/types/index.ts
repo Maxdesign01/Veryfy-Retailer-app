@@ -1,4 +1,9 @@
-export type VerificationOutcome = 'verified' | 'suspicious' | 'counterfeit' | 'invalid';
+export type VerificationOutcome =
+  | 'verified'
+  | 'not_verified'
+  | 'suspicious'
+  | 'counterfeit'
+  | 'invalid';
 
 export interface Product {
   id: string;
@@ -25,6 +30,9 @@ export interface VerificationResult {
   warnings?: string[];
   findings?: string[];
   scannedQrCode: string;
+  heading?: string;
+  supportingMessage?: string;
+  statusLabel?: string;
 }
 
 export interface InventoryItem {

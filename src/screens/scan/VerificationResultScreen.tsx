@@ -29,13 +29,13 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
     route?.params?.result || mockVerificationResults.verified;
 
   useEffect(() => {
-    // If the scanned outcome is suspicious or counterfeit, redirect to SuspiciousResult
-    if (result.outcome === 'suspicious' || result.outcome === 'counterfeit') {
+    // If the scanned outcome is not verified, redirect to SuspiciousResult
+    if (result.outcome !== 'verified') {
       navigation.replace('SuspiciousResult', { result });
     }
   }, [result.outcome, navigation]);
 
-  if (result.outcome === 'suspicious' || result.outcome === 'counterfeit') {
+  if (result.outcome !== 'verified') {
     return <View style={styles.redirectContainer} />;
   }
 
@@ -113,12 +113,15 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
         <View style={styles.matchedCard}>
           <View style={styles.verifiedBadge}>
             <VerifiedBadgeRosetteIcon size={14} color="#010B4F" />
-            <Text style={styles.verifiedBadgeText}>Verified</Text>
+            <Text style={styles.verifiedBadgeText}>{result.statusLabel || 'Verified'}</Text>
           </View>
 
-          <Text style={styles.matchedCardTitle}>The Uni-Code matched.</Text>
+          <Text style={styles.matchedCardTitle}>
+            {result.heading || 'Product Successfully Verified'}
+          </Text>
           <Text style={styles.matchedCardDescription}>
-            The Uni Code matched a registered product, with no suspicious activity detected.
+            {result.supportingMessage ||
+              'This product has been successfully authenticated. It has passed the verification check and is recognized as a verified item.'}
           </Text>
         </View>
 

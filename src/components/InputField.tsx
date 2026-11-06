@@ -110,7 +110,7 @@ interface OtpInputProps {
 }
 
 export const OtpInputField: React.FC<OtpInputProps> = ({ code, setCode, error }) => {
-  const inputs = useRef<Array<TextInput | null>>([]);
+  const inputs = useRef<any[]>([]);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
   const handleChange = (text: string, index: number) => {
@@ -139,7 +139,7 @@ export const OtpInputField: React.FC<OtpInputProps> = ({ code, setCode, error })
           return (
             <TextInput
               key={index}
-              ref={(ref) => (inputs.current[index] = ref)}
+              ref={(ref) => { inputs.current[index] = ref; }}
               style={[
                 styles.otpBox,
                 hasValue && styles.otpBoxFilled,

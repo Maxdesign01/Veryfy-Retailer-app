@@ -92,7 +92,7 @@
             type="text" 
             id="pwa-code-input" 
             class="pwa-text-input" 
-            placeholder="e.g. VF-4829-7610"
+            placeholder="e.g. VF-2026-0001"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="characters"
@@ -107,7 +107,18 @@
         </div>
 
         <div id="input-helper" class="input-helper-text">
-          <span>Format: VF-4829-7610</span>
+          <span>Format: e.g. VF-2026-0001</span>
+        </div>
+
+        <!-- Quick Demo Codes Selection -->
+        <div class="demo-quick-bar" style="margin-top: 10px;">
+          <span style="display:block; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Demo Codes:</span>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <button type="button" class="demo-quick-btn" data-code="VF-2026-0001" style="background:#EEF2FF; color:#3D52D5; border:1px solid #C7D2FE; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; cursor:pointer;">0001 · Verified</button>
+            <button type="button" class="demo-quick-btn" data-code="VF-2026-0002" style="background:#F3F4F6; color:#374151; border:1px solid #E5E7EB; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; cursor:pointer;">0002 · Not Verified</button>
+            <button type="button" class="demo-quick-btn" data-code="VF-2026-0003" style="background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; cursor:pointer;">0003 · Invalid</button>
+            <button type="button" class="demo-quick-btn" data-code="VF-2026-0004" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; cursor:pointer;">0004 · Suspicious</button>
+          </div>
         </div>
       </div>
 

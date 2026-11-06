@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowBackIcon } from '../../components/icons/ArrowBackIcon';
 import { BellIcon } from '../../components/icons/BellIcon';
+import { InvalidBadgeOctagonIcon } from '../../components/icons/InvalidBadgeOctagonIcon';
+import { NotVerifiedBadgeIcon } from '../../components/icons/NotVerifiedBadgeIcon';
 import { ProductPackageIcon } from '../../components/icons/ProductPackageIcon';
 import { SuspiciousBadgeIcon } from '../../components/icons/SuspiciousBadgeIcon';
 import { mockVerificationResults } from '../../api/mockData';
@@ -28,8 +30,27 @@ export const SuspiciousResultScreen: React.FC<SuspiciousResultScreenProps> = ({
     route?.params?.result || mockVerificationResults.suspicious;
 
   const product = result.product;
-  const isCounterfeit =
-    result.outcome === 'counterfeit' || result.outcome === 'invalid';
+  const outcome = result.outcome || 'suspicious';
+  const isInvalid = outcome === 'invalid';
+  const isNotVerified = outcome === 'not_verified';
+  const isCounterfeit = outcome === 'counterfeit';
+  const isSuspicious = outcome === 'suspicious' || isCounterfeit;
+
+  const cardTitle =
+    result.heading ||
+    (isNotVerified
+      ? 'Product Not Verified'
+      : isInvalid
+      ? 'Invalid Verification Code'
+      : 'Suspicious Product Detected');
+
+  const cardDescription =
+    result.supportingMessage ||
+    (isNotVerified
+      ? 'We could not verify the authenticity of this product. Please exercise caution and contact the manufacturer or authorized retailer for further assistance.'
+      : isInvalid
+      ? 'The verification code you entered is invalid or does not exist in our verification records. Please check the code and try again.'
+      : 'This product has been flagged as suspicious and may be counterfeit. We strongly recommend that you do not purchase, use, or distribute this item until its authenticity has been confirmed. Please contact the manufacturer or relevant verification authority.');
 
   const handleBack = () => {
     if (navigation?.canGoBack && navigation.canGoBack()) {
@@ -42,7 +63,7 @@ export const SuspiciousResultScreen: React.FC<SuspiciousResultScreenProps> = ({
   const handleReviewDetails = () => {
     Alert.alert(
       'Inspection Details',
-      `Product: ${product.name}\nBatch: ${product.batchNumber}\nManufacturer: ${product.manufacturer}\n\nWarning: The verification code does not match registered batch records from this distributor.`,
+      `Product: ${product.name}\nBatch: ${product.batchNumber}\nManufacturer: ${product.manufacturer}\n\nWarning: ${cardDescription}`,
       [{ text: 'Close' }]
     );
   };
@@ -84,37 +105,52 @@ export const SuspiciousResultScreen: React.FC<SuspiciousResultScreenProps> = ({
         showsVerticalScrollIndicator={false}
       >
         {/* Verification Result Card (Frame 503:4409 / 503:4542) */}
-        <View style={styles.resultCard}>
-          <View
-            style={[
-              styles.suspiciousBadge,
-              isCounterfeit && styles.counterfeitBadge,
-            ]}
-          >
-            <SuspiciousBadgeIcon
-              size={14}
-              color={isCounterfeit ? '#991B1B' : '#92400E'}
-            />
-            <Text
+        <View
+          style={[
+            styles.resultCard,
+            isNotVerified && styles.notVerifiedCard,
+            isInvalid && styles.invalidCard,
+            isSuspicious && styles.suspiciousCard,
+          ]}
+        >
+          {isNotVerified ? (
+            <View style={styles.notVerifiedBadge}>
+              <NotVerifiedBadgeIcon size={14} color="#374151" />
+              <Text style={styles.notVerifiedBadgeText}>
+                {result.statusLabel || 'Not Verified'}
+              </Text>
+            </View>
+          ) : isInvalid ? (
+            <View style={styles.invalidBadge}>
+              <InvalidBadgeOctagonIcon size={14} color="#991B1B" />
+              <Text style={styles.invalidBadgeText}>
+                {result.statusLabel || 'Invalid Code'}
+              </Text>
+            </View>
+          ) : (
+            <View
               style={[
-                styles.suspiciousBadgeText,
-                isCounterfeit && styles.counterfeitBadgeText,
+                styles.suspiciousBadge,
+                isCounterfeit && styles.counterfeitBadge,
               ]}
             >
-              {isCounterfeit ? 'Invalid' : 'Suspicious'}
-            </Text>
-          </View>
+              <SuspiciousBadgeIcon
+                size={14}
+                color={isCounterfeit ? '#991B1B' : '#92400E'}
+              />
+              <Text
+                style={[
+                  styles.suspiciousBadgeText,
+                  isCounterfeit && styles.counterfeitBadgeText,
+                ]}
+              >
+                {result.statusLabel || (isCounterfeit ? 'Counterfeit' : 'Suspicious')}
+              </Text>
+            </View>
+          )}
 
-          <Text style={styles.resultCardTitle}>
-            {isCounterfeit
-              ? 'Do not rely on this product.'
-              : 'Something needs a closer look.'}
-          </Text>
-          <Text style={styles.resultCardDescription}>
-            {isCounterfeit
-              ? 'The verification information associated with this product is invalid or indicates a counterfeit product.'
-              : 'Some information associated with this product requires further attention.'}
-          </Text>
+          <Text style={styles.resultCardTitle}>{cardTitle}</Text>
+          <Text style={styles.resultCardDescription}>{cardDescription}</Text>
         </View>
 
         {/* Product Info Row (Frame 503:4410) */}
@@ -139,11 +175,153 @@ export const SuspiciousResultScreen: React.FC<SuspiciousResultScreenProps> = ({
         {/* What We Found / What you should do Section (Frame 503:4418 / 503:4542) */}
         <View style={styles.findingsSection}>
           <Text style={styles.findingsHeading}>
-            {isCounterfeit ? 'What you should do' : 'What we found'}
+            {isNotVerified
+              ? 'Recommended actions'
+              : isInvalid
+              ? 'What you should do'
+              : isCounterfeit
+              ? 'What you should do'
+              : 'What we found'}
           </Text>
           <View style={styles.divider} />
 
-          {isCounterfeit ? (
+          {isNotVerified ? (
+            <>
+              {/* Finding 1 */}
+              <View style={[styles.inlineNotice, styles.notVerifiedNotice]}>
+                <NotVerifiedBadgeIcon size={18} color="#374151" />
+                <View style={styles.noticeTextWrapper}>
+                  <Text style={styles.noticeText}>
+                    Authenticity could not be confirmed with manufacturer records
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        'Unverified Record',
+                        'This code does not match active batch authentication records from an authorized manufacturer or distributor.'
+                      )
+                    }
+                  >
+                    <Text style={[styles.noticeLink, styles.notVerifiedNoticeLink]}>
+                      Learn more
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Finding 2 */}
+              <View style={[styles.inlineNotice, styles.notVerifiedNotice]}>
+                <NotVerifiedBadgeIcon size={18} color="#374151" />
+                <View style={styles.noticeTextWrapper}>
+                  <Text style={styles.noticeText}>
+                    Contact the manufacturer or authorized retailer for assistance
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        'Authorized Verification',
+                        'Contact your supplier or manufacturer support to request batch confirmation documentation.'
+                      )
+                    }
+                  >
+                    <Text style={[styles.noticeLink, styles.notVerifiedNoticeLink]}>
+                      Learn more
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Finding 3 */}
+              <View style={[styles.inlineNotice, styles.notVerifiedNotice]}>
+                <NotVerifiedBadgeIcon size={18} color="#374151" />
+                <View style={styles.noticeTextWrapper}>
+                  <Text style={styles.noticeText}>
+                    Exercise caution before stocking, selling, or dispensing
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        'Cautionary Advisory',
+                        'Keep unverified items separate until authenticity has been verified by the manufacturer.'
+                      )
+                    }
+                  >
+                    <Text style={[styles.noticeLink, styles.notVerifiedNoticeLink]}>
+                      Learn more
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </>
+          ) : isInvalid ? (
+            <>
+              {/* Finding 1 */}
+              <View style={[styles.inlineNotice, styles.counterfeitNotice]}>
+                <InvalidBadgeOctagonIcon size={18} color="#991B1B" />
+                <View style={styles.noticeTextWrapper}>
+                  <Text style={styles.noticeText}>
+                    Double check the code printed on the product packaging
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        'Packaging Code',
+                        'The code is printed on the top flap, back label, or blister pack.'
+                      )
+                    }
+                  >
+                    <Text style={[styles.noticeLink, styles.counterfeitNoticeLink]}>
+                      Learn more
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Finding 2 */}
+              <View style={[styles.inlineNotice, styles.counterfeitNotice]}>
+                <InvalidBadgeOctagonIcon size={18} color="#991B1B" />
+                <View style={styles.noticeTextWrapper}>
+                  <Text style={styles.noticeText}>
+                    Check for typos, missing letters, or extra spaces
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        'Typo Check',
+                        'Ensure you have entered each character correctly without confusing numbers and letters (e.g. 0 vs O).'
+                      )
+                    }
+                  >
+                    <Text style={[styles.noticeLink, styles.counterfeitNoticeLink]}>
+                      Learn more
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Finding 3 */}
+              <View style={[styles.inlineNotice, styles.counterfeitNotice]}>
+                <InvalidBadgeOctagonIcon size={18} color="#991B1B" />
+                <View style={styles.noticeTextWrapper}>
+                  <Text style={styles.noticeText}>
+                    Try scanning the QR code or barcode directly
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        'Optical Scan',
+                        'Using the camera scanner avoids typing mistakes and reads digital tamper marks.'
+                      )
+                    }
+                  >
+                    <Text style={[styles.noticeLink, styles.counterfeitNoticeLink]}>
+                      Learn more
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </>
+          ) : isCounterfeit ? (
             <>
               {/* Finding 1 */}
               <View style={[styles.inlineNotice, styles.counterfeitNotice]}>
@@ -289,7 +467,47 @@ export const SuspiciousResultScreen: React.FC<SuspiciousResultScreenProps> = ({
 
         {/* Action Buttons (Frame 503:4431 / 503:4542) */}
         <View style={styles.actionsContainer}>
-          {isCounterfeit ? (
+          {isNotVerified ? (
+            <>
+              <Pressable
+                style={styles.primaryButton}
+                onPress={handleBack}
+                accessibilityRole="button"
+                accessibilityLabel="Scan another product"
+              >
+                <Text style={styles.primaryButtonText}>Scan another product</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={handleReportProduct}
+                accessibilityRole="button"
+                accessibilityLabel="Report product"
+              >
+                <Text style={styles.secondaryButtonText}>Report product</Text>
+              </Pressable>
+            </>
+          ) : isInvalid ? (
+            <>
+              <Pressable
+                style={styles.primaryButton}
+                onPress={handleBack}
+                accessibilityRole="button"
+                accessibilityLabel="Try entering code again"
+              >
+                <Text style={styles.primaryButtonText}>Try entering code again</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={handleReportProduct}
+                accessibilityRole="button"
+                accessibilityLabel="Report invalid code"
+              >
+                <Text style={styles.secondaryButtonText}>Report invalid code</Text>
+              </Pressable>
+            </>
+          ) : isCounterfeit ? (
             <>
               <Pressable
                 style={styles.primaryButton}
@@ -378,6 +596,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FDE68A',
   },
+  suspiciousCard: {
+    borderColor: '#FDE68A',
+  },
+  notVerifiedCard: {
+    borderColor: '#E5E7EB',
+  },
+  invalidCard: {
+    borderColor: '#FCA5A5',
+  },
   suspiciousBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -387,6 +614,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignSelf: 'flex-start',
     marginBottom: 12,
+  },
+  notVerifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 99,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  notVerifiedBadgeText: {
+    fontFamily: 'Geist_500Medium',
+    fontSize: 12,
+    color: '#374151',
+    marginLeft: 6,
+  },
+  invalidBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 99,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  invalidBadgeText: {
+    fontFamily: 'Geist_500Medium',
+    fontSize: 12,
+    color: '#991B1B',
+    marginLeft: 6,
   },
   counterfeitBadge: {
     backgroundColor: '#FEE2E2',
@@ -481,6 +744,12 @@ const styles = StyleSheet.create({
   },
   counterfeitNotice: {
     backgroundColor: '#FEF2F2',
+  },
+  notVerifiedNotice: {
+    backgroundColor: '#F3F4F6',
+  },
+  notVerifiedNoticeLink: {
+    color: '#4B5563',
   },
   noticeTextWrapper: {
     flex: 1,

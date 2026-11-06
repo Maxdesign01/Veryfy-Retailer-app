@@ -9,39 +9,43 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// 2. Authoritative Verification Database (Figma frames 58:442, 58:510, 58:476, 58:544)
+// 2. Authoritative Verification Database (Exact 4 Outcomes)
 const VERIFICATION_OUTCOMES = {
   verified: {
     outcome: 'verified',
     badgeLabel: 'Verified',
     badgeClass: 'verified',
-    heading: 'Product record verified.',
-    subheading: 'This code matches a Veryfy product record. Check the HiddenMark and packaging for signs of tampering.',
+    heading: 'Product Successfully Verified',
+    subheading:
+      'This product has been successfully authenticated. It has passed the verification check and is recognized as a verified item.',
     badgeIcon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#010B4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`
+  },
+  not_verified: {
+    outcome: 'not_verified',
+    badgeLabel: 'Not Verified',
+    badgeClass: 'not-verified',
+    heading: 'Product Not Verified',
+    subheading:
+      'We could not verify the authenticity of this product. Please exercise caution and contact the manufacturer or authorized retailer for further assistance.',
+    badgeIcon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+  },
+  invalid: {
+    outcome: 'invalid',
+    badgeLabel: 'Invalid Code',
+    badgeClass: 'invalid',
+    heading: 'Invalid Verification Code',
+    subheading:
+      'The verification code you entered is invalid or does not exist in our verification records. Please check the code and try again.',
+    badgeIcon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
   },
   suspicious: {
     outcome: 'suspicious',
     badgeLabel: 'Suspicious',
     badgeClass: 'suspicious',
-    heading: 'This product needs attention.',
-    subheading: 'Some information requires further checking. Inspect the HiddenMark and consider reporting this product.',
+    heading: 'Suspicious Product Detected',
+    subheading:
+      'This product has been flagged as suspicious and may be counterfeit. We strongly recommend that you do not purchase, use, or distribute this item until its authenticity has been confirmed. Please contact the manufacturer or relevant verification authority.',
     badgeIcon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
-  },
-  not_verified: {
-    outcome: 'not_verified',
-    badgeLabel: 'Not verified',
-    badgeClass: 'not-verified',
-    heading: "We couldn't verify this product.",
-    subheading: "We couldn't confirm this code with available records. This does not necessarily mean the product is counterfeit.",
-    badgeIcon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
-  },
-  invalid: {
-    outcome: 'invalid',
-    badgeLabel: 'Invalid',
-    badgeClass: 'invalid',
-    heading: 'Verification code is invalid.',
-    subheading: 'This code could not be accepted or confirmed. Check the code and try again. If you suspect tampering, report it.',
-    badgeIcon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
   }
 };
 
@@ -129,41 +133,29 @@ function resetHomeBanners() {
 }
 
 function formatCode(raw) {
-  // Strip non-alphanumeric except hyphen
-  let cleaned = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  
-  if (cleaned.startsWith('VF')) {
-    cleaned = cleaned.slice(2);
-  }
-  
-  if (cleaned.length === 0) return '';
-  if (cleaned.length <= 4) {
-    return 'VF-' + cleaned;
-  }
-  return 'VF-' + cleaned.slice(0, 4) + '-' + cleaned.slice(4, 8);
+  if (!raw) return '';
+  // Normalize uppercase and preserve letters, numbers, and hyphens
+  return raw.toUpperCase().replace(/[^A-Z0-9-]/g, '');
 }
 
 function validateCodeState(val) {
-  const trimmed = val.trim().toUpperCase();
+  const trimmed = val ? val.trim().toUpperCase() : '';
 
   if (!trimmed) {
-    inputWrapper.className = 'input-box-wrapper focused';
+    inputWrapper.className = 'input-box-wrapper';
     inputHelper.className = 'input-helper-text';
-    inputHelper.innerHTML = '<span>Format: VF-4829-7610</span>';
+    inputHelper.innerHTML = '<span>Format: e.g. VF-2026-0001</span>';
     btnHomeVerify.disabled = true;
     return;
   }
 
-  // Check if complete format VF-XXXX-XXXX (12 chars total)
-  const isComplete = /^VF-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(trimmed) || trimmed.length === 12;
-
-  if (isComplete) {
+  // Any non-empty code of at least 3 characters is accepted for verification
+  if (trimmed.length >= 3) {
     inputWrapper.className = 'input-box-wrapper focused';
     inputHelper.className = 'input-helper-text';
-    inputHelper.innerHTML = '<span>Code format accepted. Ready to verify.</span>';
+    inputHelper.innerHTML = '<span>Code entered. Ready to verify.</span>';
     btnHomeVerify.disabled = false;
   } else {
-    // Incomplete or invalid
     inputWrapper.className = 'input-box-wrapper invalid';
     inputHelper.className = 'input-helper-text error';
     inputHelper.innerHTML = `
@@ -172,7 +164,7 @@ function validateCodeState(val) {
         <line x1="12" y1="8" x2="12" y2="12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
         <circle cx="12" cy="16" r="1" fill="#FFFFFF"/>
       </svg>
-      <span>Use the format VF-4829-7610 and try again.</span>
+      <span>Please enter a product verification code.</span>
     `;
     btnHomeVerify.disabled = true;
   }
@@ -194,9 +186,20 @@ codeInput.addEventListener('input', (e) => {
   validateCodeState(formatted);
 });
 
+// Quick Demo Code Buttons
+document.querySelectorAll('.demo-quick-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const code = btn.getAttribute('data-code');
+    if (code) {
+      codeInput.value = code;
+      validateCodeState(code);
+    }
+  });
+});
+
 // 6. Home Actions
 btnHomeVerify.addEventListener('click', () => {
-  const code = codeInput.value.trim().toUpperCase() || 'VF-4829-7610';
+  const code = codeInput.value.trim().toUpperCase() || 'VF-2026-0001';
   startVerificationFlow(code);
 });
 
@@ -214,6 +217,8 @@ document.getElementById('link-prev-viewed-sms').addEventListener('click', () => 
 
 // 7. Verification Execution Flow
 async function startVerificationFlow(code) {
+  const normalized = (code || '').trim().toUpperCase();
+
   // Show verifying state
   btnHomeVerify.disabled = true;
   btnHomeVerify.innerHTML = `
@@ -239,26 +244,71 @@ async function startVerificationFlow(code) {
   }
 
   // Handle Offline / Sim triggers
-  if (!navigator.onLine || code.includes('OFFLINE') || code.includes('LOST')) {
+  if (!navigator.onLine || normalized.includes('OFFLINE') || normalized.includes('LOST')) {
     triggerServiceUnavailable();
     return;
   }
-  if (code.includes('TIMEOUT') || code.includes('TIME')) {
+  if (normalized.includes('TIMEOUT') || normalized.includes('TIME')) {
     triggerTimeout();
     return;
   }
 
-  // Determine outcome
-  let outcome = 'verified';
-  if (code.includes('SUS') || code.includes('ATTN') || code.endsWith('7611')) {
-    outcome = 'suspicious';
-  } else if (code.includes('NOT') || code.includes('UNVER') || code.endsWith('7612')) {
+  // Determine outcome based on authoritative demo codes:
+  // VF-2026-0001 -> Verified
+  // VF-2026-0002 -> Not Verified / Unverified
+  // VF-2026-0003 -> Invalid Code
+  // VF-2026-0004 -> Suspicious / Counterfeit
+  // Any unrecognized code (e.g. RANDOM-CODE-123) -> Invalid Code!
+  let outcome = 'invalid';
+
+  if (
+    normalized === 'VF-2026-0001' ||
+    normalized === 'VERIFY-2026-001' ||
+    normalized === 'VF-4829-7610' ||
+    normalized === 'VFY-2849-1036'
+  ) {
+    outcome = 'verified';
+  } else if (
+    normalized === 'VF-2026-0002' ||
+    normalized === 'VERIFY-2026-002' ||
+    normalized === 'VF-4829-7612'
+  ) {
     outcome = 'not_verified';
-  } else if (code.includes('INV') || code.includes('FAKE') || code.endsWith('7613')) {
+  } else if (
+    normalized === 'VF-2026-0003' ||
+    normalized === 'VERIFY-2026-003' ||
+    normalized === 'VF-4829-7613'
+  ) {
+    outcome = 'invalid';
+  } else if (
+    normalized === 'VF-2026-0004' ||
+    normalized === 'VERIFY-2026-004' ||
+    normalized === 'VF-4829-7611'
+  ) {
+    outcome = 'suspicious';
+  } else if (
+    normalized.includes('SUS') ||
+    normalized.includes('ATTN') ||
+    normalized.includes('FAKE') ||
+    normalized.includes('COUNT')
+  ) {
+    outcome = 'suspicious';
+  } else if (
+    normalized.includes('NOT') ||
+    normalized.includes('UNVER')
+  ) {
+    outcome = 'not_verified';
+  } else if (
+    (normalized.includes('VER') || normalized.startsWith('VF-2026-')) &&
+    (normalized.endsWith('0001') || normalized.endsWith('001') || normalized.includes('CERAVE'))
+  ) {
+    outcome = 'verified';
+  } else {
+    // Unknown or unrecognized codes (e.g. RANDOM-CODE-123) ALWAYS map to Invalid Code!
     outcome = 'invalid';
   }
 
-  showResultScreen(code, outcome);
+  showResultScreen(normalized, outcome);
 }
 
 // 8. Result Screen Presentation

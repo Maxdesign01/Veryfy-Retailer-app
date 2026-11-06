@@ -106,7 +106,7 @@ class ConnectivityService {
     try {
       const networkState = await Network.getNetworkStateAsync();
       const isOnline = Boolean(networkState.isConnected && networkState.isInternetReachable !== false);
-      const isLow = this.simulatedLowBandwidth || networkState.type === Network.NetworkStateType.CELLULAR_2G;
+      const isLow = this.simulatedLowBandwidth || (networkState.type as any) === 'CELLULAR_2G';
 
       this.lastKnownStatus = {
         isOnline,
